@@ -198,8 +198,13 @@
     - `src/screens/Welcome.tsx`
     - `src/screens/Parent.tsx`
 
-- **15:33:03 – 15:43:03** ⏱️ Active Coding Session (**10 min**)
-  - 📁 **Files Worked On (3):**
+- **15:33:03 – 15:54:59** ⏱️ Active Coding Session (**22 min**)
+  - 📁 **Files Worked On (8):**
     - `scripts/functional.ts`
     - `scripts/match-debug.ts`
     - `src/screens/Game.tsx`
+    - `src/components/Icons.tsx`
+    - `src/screens/Shell.tsx`
+    - `scripts/screens.ts`
+    - `scripts/maths-check.ts`
+    - `scripts/pin-flow.ts`

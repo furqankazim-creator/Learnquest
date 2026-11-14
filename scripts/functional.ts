@@ -156,7 +156,8 @@ async function playQuiz(page: Page, game: string, count: number, mistakeFirst = 
   check('theme: Light brings back the cream theme', (await bg(page, 'Colour theme')) > 0.8);
 
   console.log('\n--- Parent area and PIN ---');
-  const digits = async (s: string) => { for (const d of s) await tap(page, d, { minTop: 200 }); await sl(500); };
+  // keypad keys come after the on-screen typed number in the page, so tap the LAST match
+  const digits = async (s: string) => { for (const d of s) await tap(page, d, { minTop: 200, last: true }); await sl(500); };
   await tap(page, 'Parent'); await sl(400);
   check('PIN: first visit asks to set a PIN', await has(page, 'Set a grown-ups’ PIN'));
   await digits('1234');

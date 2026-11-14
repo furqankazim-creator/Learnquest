@@ -7,6 +7,7 @@ import { GameKind, Q, mixedQuestions, questionsFor, shuffle, spoken, useApp } fr
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
 import MathVisual from '../components/MathVisual';
+import AppIcon, { GAME_ICON } from '../components/Icons';
 import SciVisual from '../components/SciVisual';
 import EngVisual from '../components/EngVisual';
 import { exampleText, parseViz } from '../mathViz';
@@ -259,7 +260,7 @@ export default function Game() {
         <T size={26}>←</T>
       </Press>
       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <T size={40} style={{ lineHeight: 48 }}>{TITLES[k].split(' ')[0]}</T>
+        <AppIcon name={GAME_ICON[k]} size={44} />
         <View style={{ flex: 1 }}>
           <T w={700} size={19}>{TITLES[k].split(' ').slice(1).join(' ')}</T>
           <T w={700} size={13} color={p.muted}>Year {year}</T>

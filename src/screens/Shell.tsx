@@ -8,6 +8,7 @@ import { Sound } from '../sound';
 import Parent from './Parent';
 import Settings from './Settings';
 import { useLayout } from '../layout';
+import AppIcon, { GAME_ICON, SUBJECT_ICON } from '../components/Icons';
 import { SvgXml } from 'react-native-svg';
 import { badgeSvg } from '../logo';
 
@@ -60,7 +61,7 @@ function Home() {
         onPress={() => startGame('mission')}
         style={[{ marginTop: 12, backgroundColor: p.navy, borderRadius: 20, paddingVertical: 16, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }, shadow]}
       >
-        <T size={68} style={{ lineHeight: 80 }}>🗺️</T>
+        <AppIcon name="mission" size={72} />
         <View style={{ flex: 1 }}>
           <T w={700} size={18} color="#fff">Daily Mission</T>
           <T w={600} size={13.5} color="#D9D6F5">A mix of English, Maths and Science — 6 questions</T>
@@ -83,7 +84,7 @@ function Home() {
             style={[{ flex: wide ? 1 : undefined, flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, padding: 16, marginBottom: 12, backgroundColor: p.card, minHeight: 116 }, shadow]}
           >
             <View style={{ width: 92, height: 92, borderRadius: 46, backgroundColor: (p as any)[info.soft], alignItems: 'center', justifyContent: 'center' }}>
-              <T size={56} style={{ lineHeight: 68 }}>{info.emoji}</T>
+              <AppIcon name={SUBJECT_ICON[s]} size={58} />
             </View>
             <View style={{ flex: 1 }}>
               <T w={700} size={19}>{info.name} Island</T>
@@ -139,7 +140,7 @@ function Games() {
                 backgroundColor: sel ? c.bg : p.card, borderColor: sel ? c.border : 'transparent',
               }, shadow]}
             >
-              <T size={32} style={{ lineHeight: 40 }}>{c.emoji}</T>
+              <AppIcon name={({ E: 'english', M: 'maths', S: 'science', X: 'mixed' } as const)[c.s]} size={34} />
               <T w={800} size={14} numberOfLines={1}>{c.label}</T>
             </Press>
           );
@@ -154,7 +155,7 @@ function Games() {
             onPress={() => startGame(g.k)}
             style={[{ width: wide ? '23.5%' : '47.5%', flexGrow: 1, borderRadius: 20, paddingVertical: 16, paddingHorizontal: 14, backgroundColor: p.card, minHeight: 184 }, shadow]}
           >
-            <T size={76} style={{ marginBottom: 8, lineHeight: 90 }}>{g.ico}</T>
+            <View style={{ marginBottom: 8 }}><AppIcon name={GAME_ICON[g.k]} size={78} /></View>
             <T w={700} size={16.5}>{g.name}</T>
             <T w={700} size={12.5} color={p.muted}>{g.desc}</T>
           </Press>
@@ -235,7 +236,7 @@ function TabBar() {
               onPress={() => { Sound.tap(); setTab(x.t); }}
               style={{ flex: 1, minHeight: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 8, backgroundColor: on ? p.violetSoft : 'transparent' }}
             >
-              <T size={36} style={{ lineHeight: 44 }}>{x.ico}</T>
+              <AppIcon name={x.t} size={36} />
               <T w={800} size={12} color={on ? p.ink : p.muted}>{x.label}</T>
             </Press>
           );
@@ -269,7 +270,7 @@ function Sidebar() {
             onPress={() => { Sound.tap(); setTab(x.t); }}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 68, borderRadius: 16, paddingHorizontal: 16, marginBottom: 8, backgroundColor: on ? p.violetSoft : 'transparent' }}
           >
-            <T size={36} style={{ lineHeight: 44 }}>{x.ico}</T>
+            <AppIcon name={x.t} size={36} />
             <T w={800} size={18} color={on ? p.ink : p.muted}>{x.label}</T>
           </Press>
         );

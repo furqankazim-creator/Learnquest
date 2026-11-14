@@ -15,7 +15,7 @@ async function tap(page: Page, label: string, starts = false) {
 async function run(name: string, w: number, h: number) {
   const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true, args: ['--no-sandbox'] });
   const page = await b.newPage();
-  await page.setViewport({ width: w, height: h });
+  await page.setViewport({ width: w, height: Number(process.env.VH || h) });
   await page.goto(URL, { waitUntil: 'networkidle0' });
   await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'networkidle0' }); await sl(500);
   const shot = (n: string) => page.screenshot({ path: `${OUT}/${name}-${n}.png` });
