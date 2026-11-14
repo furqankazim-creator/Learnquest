@@ -177,7 +177,7 @@ export default function Welcome() {
                       secureTextEntry
                       maxLength={4}
                       accessibilityLabel={ph}
-                      style={[{ flex: 1, fontSize: 17, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, borderWidth: 2, borderColor: p.line, backgroundColor: p.bg, color: p.ink, fontFamily: FONT.regular }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]}
+                      style={[{ flex: 1, minWidth: 0, width: '48%', fontSize: 16, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 14, borderWidth: 2, borderColor: p.line, backgroundColor: p.bg, color: p.ink, fontFamily: FONT.regular }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]}
                     />
                   ))}
                 </View>
