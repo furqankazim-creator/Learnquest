@@ -4,17 +4,20 @@ import { Subj } from './theme';
 import { ENG, MATH, SCI, RawQ } from './data/questions';
 import { ENG_X, SCI_X } from './data/extras';
 import { genMaths, wrongNums } from './data/mathsGen';
+import { genMaths2 } from './data/mathsGen2';
+import { ENG_Y, SCI_Y } from './data/pack2';
 import { FIX } from './data/fixes';
 import { STATE_KEY, dayKey, loadJSON, saveJSON, yesterdayKey } from './storage';
 
 export const STICKERS = ['🌟', '🦁', '🚀', '🌈', '🐢', '🍎', '🔭', '🏅', '🦋', '🎨', '🧲', '🌻'];
-// 24 questions per subject per year: the original 12 + 12 more (hand-written English/Science, generated Maths)
-export const POOL_SIZE = 24;
+// 36 questions per subject per year: original 12 + 12 extras + 12 from the Cambridge-style pack
+// (hand-written English/Science with reading passages and enquiry questions; generated Maths).
+export const POOL_SIZE = 36;
 export function poolFor(subj: Subj, year: number): RawQ[] {
   let raw: RawQ[];
-  if (subj === 'E') raw = [...ENG[year], ...ENG_X[year]];
-  else if (subj === 'S') raw = [...SCI[year], ...SCI_X[year]];
-  else raw = [...MATH[year], ...genMaths(year)];
+  if (subj === 'E') raw = [...ENG[year], ...ENG_X[year], ...ENG_Y[year]];
+  else if (subj === 'S') raw = [...SCI[year], ...SCI_X[year], ...SCI_Y[year]];
+  else raw = [...MATH[year], ...genMaths(year), ...genMaths2(year)];
   return raw.map((r, i) => {
     const fixed = FIX[`${subj}${year}.${i}`];
     if (fixed) return fixed;
@@ -28,7 +31,10 @@ export function poolFor(subj: Subj, year: number): RawQ[] {
   });
 }
 
-export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string };
+export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string };
+
+// what the voice reads aloud: the passage (if any) and then the question
+export const spoken = (q: Q) => (q.p ? `${q.p} ${q.q}` : q.q);
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
@@ -39,15 +45,17 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 function toQ(raw: RawQ, subj: Subj, idx: number): Q {
-  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6] };
+  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6], p: raw[7] };
 }
-export function questionsFor(subj: Subj, year: number, count: number): Q[] {
-  return shuffle(poolFor(subj, year).map((r, i) => toQ(r, subj, i))).slice(0, count);
+// noPassage: Match It cannot show a reading passage, so it only uses stand-alone questions
+export function questionsFor(subj: Subj, year: number, count: number, noPassage = false): Q[] {
+  const all = poolFor(subj, year).map((r, i) => toQ(r, subj, i)).filter((q) => !noPassage || !q.p);
+  return shuffle(all).slice(0, count);
 }
-export function mixedQuestions(year: number, count: number): Q[] {
+export function mixedQuestions(year: number, count: number, noPassage = false): Q[] {
   const all: Q[] = [];
   (['E', 'M', 'S'] as Subj[]).forEach((s) => poolFor(s, year).forEach((r, i) => all.push(toQ(r, s, i))));
-  return shuffle(all).slice(0, count);
+  return shuffle(noPassage ? all.filter((q) => !q.p) : all).slice(0, count);
 }
 
 export type GameSubj = Subj | 'X';

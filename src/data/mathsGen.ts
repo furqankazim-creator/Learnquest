@@ -1,8 +1,8 @@
 // Year-by-year Maths question generators: fresh numbers every game, difficulty rises each year.
 import type { RawQ } from './questions';
 
-const rnd = (a: number, b: number) => Math.floor(Math.random() * (b - a + 1)) + a;
-const pick = <T,>(arr: T[]): T => arr[rnd(0, arr.length - 1)];
+export const rnd = (a: number, b: number) => Math.floor(Math.random() * (b - a + 1)) + a;
+export const pick = <T,>(arr: T[]): T => arr[rnd(0, arr.length - 1)];
 
 // Believable wrong answers: an off-by-one slip, a tens/hundreds slip and a nearby miss.
 export function wrongNums(ans: number, neg = false): number[] {
@@ -23,14 +23,14 @@ export function wrongNums(ans: number, neg = false): number[] {
   return out;
 }
 
-function num(q: string, ans: number, e: string, why: string, _spread: number[] = [], neg = false): RawQ {
+export function num(q: string, ans: number, e: string, why: string, _spread: number[] = [], neg = false): RawQ {
   const w = wrongNums(ans, neg);
   return [q, String(ans), String(w[0]), String(w[1]), String(w[2]), e, why];
 }
-function txt(q: string, ans: string, wrong: string[], e: string, why: string): RawQ {
+export function txt(q: string, ans: string, wrong: string[], e: string, why: string): RawQ {
   return [q, ans, wrong[0], wrong[1], wrong[2], e, why];
 }
-const dp = (n: number, d = 2) => String(Number(n.toFixed(d)));
+export const dp = (n: number, d = 2) => String(Number(n.toFixed(d)));
 
 const gens: Record<number, (() => RawQ)[]> = {
   1: [

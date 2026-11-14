@@ -3,7 +3,7 @@ import { Animated, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FIXED, SUBJECTS, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
-import { GameKind, Q, mixedQuestions, questionsFor, shuffle, useApp } from '../state';
+import { GameKind, Q, mixedQuestions, questionsFor, shuffle, spoken, useApp } from '../state';
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
 
@@ -29,10 +29,15 @@ function QuestionCard({ q, extra }: { q: Q; extra?: string }) {
       </View>
       <View style={{ flex: wide ? 1 : undefined, alignItems: al }}>
         {extra ? <T w={800} size={15} color={p.muted} style={{ textAlign: wide ? 'left' : 'center' }}>{extra}</T> : null}
+        {q.p ? (
+          <View style={{ alignSelf: 'stretch', backgroundColor: p.violetSoft, borderRadius: 16, padding: 14, marginTop: 10, borderLeftWidth: 5, borderLeftColor: p.violet }}>
+            <T w={700} size={wide ? 18 : 16} style={{ lineHeight: wide ? 27 : 24, textAlign: 'left' }}>{q.p}</T>
+          </View>
+        ) : null}
         <T w={800} size={wide ? 28 : 22} style={{ lineHeight: wide ? 37 : 29.7, textAlign: wide ? 'left' : 'center', marginTop: 10, marginBottom: 4 }}>{q.q}</T>
         <T w={700} size={13.5} color={p.muted}>{s.emoji} {s.name} • Year {year}</T>
-        <Press onPress={() => Sound.speak(q.q)} style={{ marginTop: 10, backgroundColor: p.sunny, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 20, minHeight: 50, justifyContent: 'center' }}>
-          <T w={800} size={15} color="#2D2A4A">🔊 Hear the question</T>
+        <Press onPress={() => Sound.speak(spoken(q))} style={{ marginTop: 10, backgroundColor: p.sunny, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 20, minHeight: 50, justifyContent: 'center' }}>
+          <T w={800} size={15} color="#2D2A4A">{q.p ? '🔊 Hear the story and question' : '🔊 Hear the question'}</T>
         </Press>
       </View>
     </View>
@@ -119,8 +124,8 @@ export default function Game() {
 
   // questions are built once per game run
   const qs = useMemo<Q[]>(() => {
-    if (k === 'mission' || gameSubj === 'X') return mixedQuestions(year, k === 'match' ? 12 : 6);
-    return questionsFor(gameSubj, year, k === 'match' ? 12 : 6);
+    if (k === 'mission' || gameSubj === 'X') return mixedQuestions(year, k === 'match' ? 12 : 6, k === 'match');
+    return questionsFor(gameSubj, year, k === 'match' ? 12 : 6, k === 'match');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app.gameRun]);
 
@@ -147,7 +152,7 @@ export default function Game() {
   // read each new question aloud
   useEffect(() => {
     if (result) return;
-    if (k !== 'match' && qs[i]) Sound.speak(qs[i].q);
+    if (k !== 'match' && qs[i]) Sound.speak(spoken(qs[i]));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i, result]);
 

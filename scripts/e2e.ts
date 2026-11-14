@@ -2,13 +2,14 @@
 import puppeteer, { Page } from 'puppeteer-core';
 import { ENG } from '../src/data/questions';
 import { ENG_X } from '../src/data/extras';
+import { ENG_Y } from '../src/data/pack2';
 import { FIX } from '../src/data/fixes';
 
 const URL = process.argv[2] || 'http://localhost:5100';
 const YEAR = 2;
 const answers = new Map<string, string>();
 const wrongs = new Map<string, string>();
-[...ENG[YEAR], ...ENG_X[YEAR]].forEach((r, i) => { const q = FIX[`E${YEAR}.${i}`] ?? r; answers.set(q[0], q[1]); wrongs.set(q[0], q[2]); });
+[...ENG[YEAR], ...ENG_X[YEAR], ...ENG_Y[YEAR]].forEach((r, i) => { const q = FIX[`E${YEAR}.${i}`] ?? r; answers.set(q[0], q[1]); wrongs.set(q[0], q[2]); });
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const text = (page: Page) => page.evaluate(() => document.body.innerText);

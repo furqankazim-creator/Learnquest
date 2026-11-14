@@ -111,3 +111,18 @@
     - `src/screens/Game.tsx`
     - `src/screens/Shell.tsx`
     - `scripts/shots.ts`
+
+## 2026-11-14
+
+- **09:53:00 – 09:58:53** ⏱️ Active Coding Session (**6 min**)
+  - 📁 **Files Worked On (10):**
+    - `src/data/mathsGen.ts`
+    - `src/data/mathsGen2.ts`
+    - `src/data/pack2.ts`
+    - `src/data/questions.ts`
+    - `src/screens/Game.tsx`
+    - `src/state.tsx`
+    - `scripts/validate.ts`
+    - `scripts/sample2.ts`
+    - `scripts/passage-shot.ts`
+    - `scripts/e2e.ts`

@@ -1,5 +1,8 @@
 // Format: [question, correctAnswer, wrong1, wrong2, wrong3, emoji]
-export type RawQ = [string, string, string, string, string, string] | [string, string, string, string, string, string, string];
+export type RawQ =
+  | [string, string, string, string, string, string]
+  | [string, string, string, string, string, string, string]
+  | [string, string, string, string, string, string, string, string];
 export type Bank = Record<number, RawQ[]>;
 export const ENG: Bank = {
  "1": [

@@ -1,6 +1,8 @@
 import { ENG, MATH, SCI } from '../src/data/questions';
 import { ENG_X, SCI_X } from '../src/data/extras';
 import { genMaths, wrongNums } from '../src/data/mathsGen';
+import { genMaths2 } from '../src/data/mathsGen2';
+import { ENG_Y, SCI_Y } from '../src/data/pack2';
 import { FIX } from '../src/data/fixes';
 
 let bad = 0, total = 0;
@@ -14,8 +16,8 @@ const chk = (q: any[], tag: string) => {
 const pools: Record<string, any[][]> = {};
 for (let y = 1; y <= 6; y++) {
   const apply = (s: string, arr: any[][]) => arr.map((r, i) => FIX[`${s}${y}.${i}`] ?? r);
-  pools['E' + y] = apply('E', [...ENG[y], ...ENG_X[y]]);
-  pools['S' + y] = apply('S', [...SCI[y], ...SCI_X[y]]);
+  pools['E' + y] = apply('E', [...ENG[y], ...ENG_X[y], ...ENG_Y[y]]);
+  pools['S' + y] = apply('S', [...SCI[y], ...SCI_X[y], ...SCI_Y[y]]);
   pools['M' + y] = apply('M', [...MATH[y]]);
 }
 for (const k of Object.keys(FIX)) { const [id] = k.split('.'); if (!pools[id]) console.log('FIX key for unknown pool', k); }
@@ -34,11 +36,14 @@ for (const [tag, arr] of Object.entries(pools)) {
   });
 }
 for (let y = 1; y <= 6; y++) {
-  if (genMaths(y).length !== 12) console.log('GEN COUNT', y);
-  for (let n = 0; n < 500; n++) genMaths(y).forEach((q) => chk(q, 'G' + y));
+  if (genMaths(y).length !== 12 || genMaths2(y).length !== 12) console.log('GEN COUNT', y);
+  if (ENG_Y[y].length !== 12 || SCI_Y[y].length !== 12) console.log('PACK2 COUNT', y);
+  for (let n = 0; n < 500; n++) { genMaths(y).forEach((q) => chk(q, 'G' + y)); genMaths2(y).forEach((q) => chk(q, 'H' + y)); }
 }
 for (const a of [0, 1, 3, 8, 12, 25, 99, 144, 365, 1000, 2250, 4326]) for (let n = 0; n < 200; n++) {
   const w = wrongNums(a);
   if (w.length !== 3 || new Set([a, ...w]).size !== 4 || w.some((x) => x < 0)) { bad++; console.log('WRONGNUMS', a, w); break; }
 }
+let passages = 0; for (const arr of Object.values(pools)) arr.forEach((q) => { if (q[7]) passages++; });
+console.log('reading-passage questions:', passages);
 console.log('checked', total, 'bad', bad);
