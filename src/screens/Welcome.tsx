@@ -115,6 +115,35 @@ export default function Welcome() {
             />
             <T w={600} size={12.5} color={p.muted} style={{ marginTop: 6 }}>First name only — no email or birthday is ever asked for.</T>
 
+            {!pin ? (
+              <View style={{ marginTop: 16 }}>
+                <T w={800} size={15} style={{ marginBottom: 4 }}>🔒 Parent PIN</T>
+                <T w={600} size={12.5} color={p.muted} style={{ marginBottom: 8 }}>A parent chooses 4 numbers. It protects the Grown-ups area, Change player and Reset.</T>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  {[['Choose PIN', pin1, setPin1], ['Repeat PIN', pin2, setPin2]].map(([ph, v, set]: any) => (
+                    <TextInput
+                      key={ph}
+                      value={v}
+                      onChangeText={(x: string) => { set(x.replace(/\D/g, '').slice(0, 4)); setErr(''); }}
+                      placeholder={ph}
+                      placeholderTextColor={p.muted}
+                      keyboardType="number-pad"
+                      secureTextEntry
+                      maxLength={4}
+                      accessibilityLabel={ph}
+                      style={[{ flex: 1, minWidth: 0, width: '48%', fontSize: 16, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 14, borderWidth: 2, borderColor: p.line, backgroundColor: p.bg, color: p.ink, fontFamily: FONT.regular }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]}
+                    />
+                  ))}
+                </View>
+                {err ? <T w={700} size={13} color={p.dangerText} style={{ marginTop: 6 }}>{err}</T> : null}
+              </View>
+            ) : (
+              <View style={{ marginTop: 16, backgroundColor: p.violetSoft, borderRadius: 14, padding: 12 }}>
+                <T w={800} size={14}>🔒 Parent PIN is set ✓</T>
+                <T w={600} size={12.5} color={p.muted}>Asked for the Grown-ups area, Change player and Reset.</T>
+              </View>
+            )}
+
             <T w={800} size={15} style={{ marginTop: 16, marginBottom: 8 }}>Pick a buddy</T>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               {favList.map((c) => {
@@ -160,30 +189,6 @@ export default function Welcome() {
                 );
               })}
             </View>
-
-            {!pin ? (
-              <View style={{ marginTop: 16 }}>
-                <T w={800} size={15} style={{ marginBottom: 4 }}>🔒 Parent PIN</T>
-                <T w={600} size={12.5} color={p.muted} style={{ marginBottom: 8 }}>A parent chooses 4 numbers. It protects the Grown-ups area, Change player and Reset.</T>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  {[['Choose PIN', pin1, setPin1], ['Repeat PIN', pin2, setPin2]].map(([ph, v, set]: any) => (
-                    <TextInput
-                      key={ph}
-                      value={v}
-                      onChangeText={(x: string) => { set(x.replace(/\D/g, '').slice(0, 4)); setErr(''); }}
-                      placeholder={ph}
-                      placeholderTextColor={p.muted}
-                      keyboardType="number-pad"
-                      secureTextEntry
-                      maxLength={4}
-                      accessibilityLabel={ph}
-                      style={[{ flex: 1, minWidth: 0, width: '48%', fontSize: 16, paddingVertical: 12, paddingHorizontal: 10, borderRadius: 14, borderWidth: 2, borderColor: p.line, backgroundColor: p.bg, color: p.ink, fontFamily: FONT.regular }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]}
-                    />
-                  ))}
-                </View>
-                {err ? <T w={700} size={13} color={p.dangerText} style={{ marginTop: 6 }}>{err}</T> : null}
-              </View>
-            ) : null}
 
             <Press
               onPress={() => {
