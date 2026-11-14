@@ -7,6 +7,8 @@ import { GameKind, Q, mixedQuestions, questionsFor, shuffle, spoken, useApp } fr
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
 import MathVisual from '../components/MathVisual';
+import SciVisual from '../components/SciVisual';
+import EngVisual from '../components/EngVisual';
 import { exampleText, parseViz } from '../mathViz';
 
 const TITLES: Record<GameKind, string> = {
@@ -33,6 +35,10 @@ function QuestionCard({ q, extra, help, hint, onHelp }: { q: Q; extra?: string; 
     <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: compact ? 12 : 22, paddingHorizontal: wide ? 32 : 16, alignItems: 'center', flexDirection: wide ? 'row' : 'column', gap: wide ? 36 : 0 }, shadow]}>
       {viz ? (
         <MathVisual key={q.q} viz={viz} wide={wide} compact={compact} />
+      ) : q.sv ? (
+        <SciVisual key={q.q} spec={q.sv} wide={wide} compact={compact} />
+      ) : q.ev ? (
+        <EngVisual key={q.q} spec={q.ev} wide={wide} compact={compact} />
       ) : (
         <View style={{ width: circle, height: circle, borderRadius: circle / 2, backgroundColor: (p as any)[s.soft], alignItems: 'center', justifyContent: 'center', marginBottom: wide ? 0 : 4 }}>
           <T size={circle * 0.65} style={{ lineHeight: circle * 0.8 }}>{q.e}</T>
@@ -103,8 +109,8 @@ function MatchCard({ label, emoji, state, onPress }: { label: string; emoji?: st
   );
 }
 
-function Balloon({ label, color, popped, onPress, w = 76, long = false, compact = false, wrong = false }: { label: string; color: string; popped: boolean; onPress: () => void; w?: number; long?: boolean; compact?: boolean; wrong?: boolean }) {
-  const h = long ? Math.round(w * (compact ? 0.66 : 1.1)) : Math.round(w * 1.26);
+function Balloon({ label, color, popped, onPress, w = 76, long = false, compact = false, tight = false, wrong = false }: { label: string; color: string; popped: boolean; onPress: () => void; w?: number; long?: boolean; compact?: boolean; tight?: boolean; wrong?: boolean }) {
+  const h = long ? Math.round(w * (compact ? (tight ? 0.52 : 0.66) : 1.1)) : Math.round(w * 1.26);
   const fs = !long ? (label.length > 5 ? 17 : 24) : label.length <= 12 ? 20 : label.length <= 24 ? 17 : label.length <= 40 ? 15 : 13;
   const [scale] = useState(() => new Animated.Value(1));
   const [fade] = useState(() => new Animated.Value(1));
@@ -331,7 +337,7 @@ export default function Game() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
               {q.opts.map((o, oi) => (
                 <View key={`${i}-${oi}`} style={{ opacity: wrongSet[oi] ? 0.45 : 1 }} pointerEvents={wrongSet[oi] ? 'none' : 'auto'}>
-                  <Balloon label={o} compact={compact} wrong={!!wrongSet[oi]} long={longBalloons} w={longBalloons ? balloonW : wide ? 110 : Math.min(76, Math.floor((balloonAvail - 30) / 4))} color={FIXED.balloons[oi % 4]} popped={chosen === oi} onPress={() => answer(q, oi)} />
+                  <Balloon label={o} compact={compact} tight={compact && (!!q.sv || !!q.ev || q.subj === 'M' || q.q.length > 55)} wrong={!!wrongSet[oi]} long={longBalloons} w={longBalloons ? balloonW : wide ? 110 : Math.min(76, Math.floor((balloonAvail - 30) / 4))} color={FIXED.balloons[oi % 4]} popped={chosen === oi} onPress={() => answer(q, oi)} />
                 </View>
               ))}
             </View>

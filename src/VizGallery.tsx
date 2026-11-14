@@ -1,6 +1,9 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import MathVisual from './components/MathVisual';
+import SciVisual from './components/SciVisual';
+import EngVisual from './components/EngVisual';
+import { ENG_VIS, SCI_VIS } from './data/visuals';
 import { T } from './components/UI';
 import { parseViz } from './mathViz';
 import { usePalette } from './theme';
@@ -22,8 +25,28 @@ const SAMPLES: [string, string][] = [
   ['There are 14 birds in a tree. 5 fly away. How many birds are left?', '🐦'],
 ];
 
-export default function VizGallery() {
+// every distinct English / Science picture, once each
+function uniqueSpecs(src: Record<number, Record<number, any>>) {
+  const seen = new Map<string, any>();
+  for (const y of Object.keys(src)) for (const spec of Object.values(src[Number(y)])) { const k = JSON.stringify(spec); if (!seen.has(k)) seen.set(k, spec); }
+  return [...seen.values()];
+}
+
+export default function VizGallery({ mode = '1' }: { mode?: string }) {
   const p = usePalette();
+  if (mode === '2' || mode === '3') {
+    const list = uniqueSpecs(mode === '2' ? SCI_VIS : ENG_VIS);
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: p.bg }} contentContainerStyle={{ padding: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 14, justifyContent: 'center' }}>
+        {list.map((spec) => (
+          <View key={JSON.stringify(spec)} style={{ width: 360 }}>
+            <T w={700} size={12} color={p.muted} numberOfLines={1} style={{ marginBottom: 3 }}>{spec.t}{spec.kind ? ' · ' + spec.kind : ''}</T>
+            {mode === '2' ? <SciVisual spec={spec} /> : <EngVisual spec={spec} />}
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
   return (
     <ScrollView style={{ flex: 1, backgroundColor: p.bg }} contentContainerStyle={{ padding: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
       {SAMPLES.map(([q, e]) => {

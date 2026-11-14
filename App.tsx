@@ -24,7 +24,8 @@ function Root() {
   );
 }
 
-const SHOW_GALLERY = process.env.EXPO_PUBLIC_VIZ_GALLERY === '1' && Platform.OS === 'web';
+const GALLERY_MODE = process.env.EXPO_PUBLIC_VIZ_GALLERY;
+const SHOW_GALLERY = !!GALLERY_MODE && Platform.OS === 'web';
 
 export default function App() {
   const [pref, setPrefState] = useState<ThemePref>('light');
@@ -36,7 +37,7 @@ export default function App() {
   if (!loaded && Platform.OS !== 'web') {
     return <View style={{ flex: 1, backgroundColor: '#191730', alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color="#FFC93C" /></View>;
   }
-  if (SHOW_GALLERY) return <SafeAreaProvider><ThemeCtx.Provider value={{ pref, setPref }}><VizGallery /></ThemeCtx.Provider></SafeAreaProvider>;
+  if (SHOW_GALLERY) return <SafeAreaProvider><ThemeCtx.Provider value={{ pref, setPref }}><VizGallery mode={GALLERY_MODE} /></ThemeCtx.Provider></SafeAreaProvider>;
   return (
     <SafeAreaProvider>
       <ThemeCtx.Provider value={{ pref, setPref }}>

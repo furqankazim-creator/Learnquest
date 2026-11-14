@@ -154,3 +154,25 @@
     - `scripts/q2-shot.ts`
     - `src/layout.ts`
     - `src/components/MathVisual.tsx`
+
+- **11:47:07 – 11:53:51** ⏱️ Active Coding Session (**7 min**)
+  - 📁 **Files Worked On (12):**
+    - `src/components/VizPanel.tsx`
+    - `src/data/visualTypes.ts`
+    - `src/components/SciVisual.tsx`
+    - `src/components/EngVisual.tsx`
+    - `src/data/visuals.ts`
+    - `src/state.tsx`
+    - `src/screens/Game.tsx`
+    - `scripts/visual-align.ts`
+    - `App.tsx`
+    - `src/VizGallery.tsx`
+    - `scripts/gallery-full.ts`
+    - `scripts/four-answers.ts`
+
+- **11:59:24 – 12:05:24** ⏱️ Active Coding Session (**6 min**)
+  - 📁 **Files Worked On (4):**
+    - `src/screens/Game.tsx`
+    - `src/components/SciVisual.tsx`
+    - `scripts/pic-shot.ts`
+    - `src/data/visuals.ts`

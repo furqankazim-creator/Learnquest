@@ -1,13 +1,15 @@
 // Plays a Balloon Pop / Quick Quiz and checks that EVERY question shows four visible answers.
 import puppeteer, { Page } from 'puppeteer-core';
-import { ENG } from '../src/data/questions';
-import { ENG_X } from '../src/data/extras';
-import { ENG_Y } from '../src/data/pack2';
+import { ENG, SCI } from '../src/data/questions';
+import { ENG_X, SCI_X } from '../src/data/extras';
+import { ENG_Y, SCI_Y } from '../src/data/pack2';
 import { FIX } from '../src/data/fixes';
-const [, , URL = 'http://localhost:5150', GAME = 'Balloon Pop'] = process.argv;
+const [, , URL = 'http://localhost:5150', GAME = 'Balloon Pop', SUBJ = 'English'] = process.argv;
+const YEAR = Number(process.env.YEAR || 2);
 const sl = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const bank = new Map<string, string[]>();
-[...ENG[2], ...ENG_X[2], ...ENG_Y[2]].forEach((r, i) => { const q = FIX[`E2.${i}`] ?? r; bank.set(q[0], [q[1], q[2], q[3], q[4]]); });
+const isS = SUBJ === 'Science';
+(isS ? [...SCI[YEAR], ...SCI_X[YEAR], ...SCI_Y[YEAR]] : [...ENG[YEAR], ...ENG_X[YEAR], ...ENG_Y[YEAR]]).forEach((r, i) => { const q = FIX[`${isS ? 'S' : 'E'}${YEAR}.${i}`] ?? r; bank.set(q[0], [q[1], q[2], q[3], q[4]]); });
 
 async function visibleOptions(page: Page, opts: string[], minOpacity = 0.6) {
   return page.evaluate((list, minO) => list.filter((label) => {
@@ -32,7 +34,8 @@ async function visibleOptions(page: Page, opts: string[], minOpacity = 0.6) {
     const box = await page.evaluate((l) => { const els = Array.from(document.querySelectorAll('div')) as HTMLElement[]; const a = els.filter((e) => (e.innerText || '').trim() === l).sort((x, y) => x.innerText.length - y.innerText.length); if (!a.length) return null; const r = a[0].getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, label);
     if (box) await page.mouse.click(box.x, box.y);
   };
-  await click('Play now!', true); await sl(500); await click('Games'); await sl(300); await click(GAME, true); await sl(1200);
+  await click(`Year ${YEAR}`, true); await sl(200);
+  await click('Play now!', true); await sl(500); await click('Games'); await sl(300); await click(SUBJ); await sl(200); await click(GAME, true); await sl(1200);
   let allGood = true;
   for (let n = 0; n < 6; n++) {
     await sl(700);

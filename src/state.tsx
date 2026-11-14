@@ -8,6 +8,8 @@ import { genMaths2 } from './data/mathsGen2';
 import { ENG_Y, SCI_Y } from './data/pack2';
 import { FIX } from './data/fixes';
 import { EX_E, EX_S } from './data/examples';
+import { ENG_VIS, SCI_VIS } from './data/visuals';
+import type { EngSpec, SciSpec } from './data/visualTypes';
 import { STATE_KEY, dayKey, loadJSON, saveJSON, yesterdayKey } from './storage';
 
 export const STICKERS = ['🌟', '🦁', '🚀', '🌈', '🐢', '🍎', '🔭', '🏅', '🦋', '🎨', '🧲', '🌻'];
@@ -32,7 +34,7 @@ export function poolFor(subj: Subj, year: number): RawQ[] {
   });
 }
 
-export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string };
+export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string; sv?: SciSpec; ev?: EngSpec };
 
 // what the voice reads aloud: the passage (if any) and then the question
 export const spoken = (q: Q) => (q.p ? `${q.p} ${q.q}` : q.q);
@@ -48,7 +50,10 @@ export function shuffle<T>(arr: T[]): T[] {
 function toQ(raw: RawQ, subj: Subj, idx: number, year: number): Q {
   // English and Science carry a hand-written real-life example; Maths builds its own from the picture
   const ex = subj === 'E' ? EX_E[year]?.[idx] : subj === 'S' ? EX_S[year]?.[idx] : undefined;
-  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6], p: raw[7], ex };
+  // textbook-style picture for many English and Science questions
+  const sv = subj === 'S' ? SCI_VIS[year]?.[idx] : undefined;
+  const ev = subj === 'E' ? ENG_VIS[year]?.[idx] : undefined;
+  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6], p: raw[7], ex, sv, ev };
 }
 // noPassage: Match It cannot show a reading passage, so it only uses stand-alone questions
 export function questionsFor(subj: Subj, year: number, count: number, noPassage = false): Q[] {
