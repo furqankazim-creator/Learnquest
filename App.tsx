@@ -8,6 +8,7 @@ import { ThemeCtx, ThemePref, usePalette } from './src/theme';
 import Welcome from './src/screens/Welcome';
 import Shell from './src/screens/Shell';
 import Game from './src/screens/Game';
+import VizGallery from './src/VizGallery';
 import { THEME_KEY, loadJSON, saveJSON } from './src/storage';
 
 function Root() {
@@ -23,6 +24,8 @@ function Root() {
   );
 }
 
+const SHOW_GALLERY = process.env.EXPO_PUBLIC_VIZ_GALLERY === '1' && Platform.OS === 'web';
+
 export default function App() {
   const [pref, setPrefState] = useState<ThemePref>('light');
   useEffect(() => {
@@ -33,6 +36,7 @@ export default function App() {
   if (!loaded && Platform.OS !== 'web') {
     return <View style={{ flex: 1, backgroundColor: '#191730', alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color="#FFC93C" /></View>;
   }
+  if (SHOW_GALLERY) return <SafeAreaProvider><ThemeCtx.Provider value={{ pref, setPref }}><VizGallery /></ThemeCtx.Provider></SafeAreaProvider>;
   return (
     <SafeAreaProvider>
       <ThemeCtx.Provider value={{ pref, setPref }}>

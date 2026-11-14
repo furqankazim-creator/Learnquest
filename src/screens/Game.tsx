@@ -6,6 +6,8 @@ import { Press, T, useCardShadow } from '../components/UI';
 import { GameKind, Q, mixedQuestions, questionsFor, shuffle, spoken, useApp } from '../state';
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
+import MathVisual from '../components/MathVisual';
+import { parseViz } from '../mathViz';
 
 const TITLES: Record<GameKind, string> = {
   balloon: '🎈 Balloon Pop', rescue: '🦸 Rescue Quiz', match: '🧩 Match It', quiz: '⚡ Quick Quiz', mission: '🗺️ Daily Mission',
@@ -22,11 +24,17 @@ function QuestionCard({ q, extra }: { q: Q; extra?: string }) {
   const { wide } = useLayout();
   const s = SUBJECTS[q.subj];
   const al = wide ? 'flex-start' : 'center';
+  // Maths questions get a picture of the actual problem (blocks, groups, number line, clock…)
+  const viz = q.subj === 'M' ? parseViz(q.q, q.e) : null;
   return (
     <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: 22, paddingHorizontal: wide ? 32 : 18, alignItems: 'center', flexDirection: wide ? 'row' : 'column', gap: wide ? 36 : 0 }, shadow]}>
-      <View style={{ width: wide ? 170 : 168, height: wide ? 170 : 168, borderRadius: 85, backgroundColor: (p as any)[s.soft], alignItems: 'center', justifyContent: 'center', marginBottom: wide ? 0 : 4 }}>
-        <T size={110} style={{ lineHeight: 134 }}>{q.e}</T>
-      </View>
+      {viz ? (
+        <MathVisual key={q.q} viz={viz} wide={wide} />
+      ) : (
+        <View style={{ width: wide ? 170 : 168, height: wide ? 170 : 168, borderRadius: 85, backgroundColor: (p as any)[s.soft], alignItems: 'center', justifyContent: 'center', marginBottom: wide ? 0 : 4 }}>
+          <T size={110} style={{ lineHeight: 134 }}>{q.e}</T>
+        </View>
+      )}
       <View style={{ flex: wide ? 1 : undefined, alignItems: al }}>
         {extra ? <T w={800} size={15} color={p.muted} style={{ textAlign: wide ? 'left' : 'center' }}>{extra}</T> : null}
         {q.p ? (
