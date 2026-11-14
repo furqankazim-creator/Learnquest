@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
+import { Avatar } from '../components/Characters';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AGES, SUBJECTS, Subj, usePalette } from '../theme';
 import { Press, ProgressBar, T, useCardShadow } from '../components/UI';
@@ -17,15 +18,13 @@ const SUBJ_KEYS: Subj[] = ['E', 'M', 'S'];
 function Header() {
   const p = usePalette();
   const shadow = useCardShadow();
-  const { name, buddy, year, stars, coins, streak, soundOn, toggleSound, settingsOpen, setSettingsOpen } = useApp();
+  const { name, buddyBg, buddy, year, stars, coins, streak, soundOn, toggleSound, settingsOpen, setSettingsOpen } = useApp();
   const gear = [{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: settingsOpen ? p.sky : p.violetSoft }, shadow] as any;
   const pill = [{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: p.card, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 12 }, shadow] as any;
   return (
     <View style={{ paddingTop: 16, paddingBottom: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <View style={{ width: 68, height: 68, borderRadius: 34, backgroundColor: p.sunny, alignItems: 'center', justifyContent: 'center' }}>
-          <T size={42} style={{ lineHeight: 50 }}>{buddy}</T>
-        </View>
+        <Avatar e={buddy} bg={buddyBg ?? p.sunny} size={68} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <T w={700} size={19} numberOfLines={1}>{name}</T>
           <T w={700} size={13} color={p.muted}>Year {year} • {AGES[year]}</T>

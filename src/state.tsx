@@ -8,6 +8,7 @@ import { genMaths2 } from './data/mathsGen2';
 import { ENG_Y, SCI_Y } from './data/pack2';
 import { FIX } from './data/fixes';
 import { EX_E, EX_S } from './data/examples';
+import { DEFAULT_FAVS, MAX_FAVS, Custom, findChar } from './data/characters';
 import { ENG_VIS, SCI_VIS } from './data/visuals';
 import type { EngSpec, SciSpec } from './data/visualTypes';
 import { emojiForOptions } from './data/optionEmoji';
@@ -88,7 +89,12 @@ type Ctx = {
   game: GameKind | null; gameRun: number;
   parentOpen: boolean; setParentOpen: (b: boolean) => void;
   settingsOpen: boolean; setSettingsOpen: (b: boolean) => void;
-  enter: (name: string, buddy: string, year: number, tab?: Tab) => void;
+  enter: (name: string, buddy: { id: string; e: string; bg?: string | null }, year: number, tab?: Tab, newPin?: string) => void;
+  buddyId: string; buddyBg: string | null; favs: string[]; custom: Custom[];
+  setBuddyChoice: (id: string) => void;
+  promoteFav: (id: string) => void;
+  addFav: (id: string) => boolean; removeFav: (id: string) => void;
+  createCustom: (e: string, name: string, bg: string) => string; deleteCustom: (id: string) => void;
   changePlayer: () => void;
   startGame: (k: GameKind) => void; leaveGame: () => void;
   recordAnswer: (q: Q, ok: boolean) => void;
@@ -102,6 +108,7 @@ type Ctx = {
 type Saved = {
   name: string; buddy: string; year: number; stars: number; coins: number; answered: number; correct: number;
   right: Right; stickers: number[]; soundOn: boolean; pin: string | null; streak: number; lastDay: string | null; profile: boolean;
+  buddyId?: string; buddyBg?: string | null; favs?: string[]; custom?: Custom[];
 };
 
 const C = createContext<Ctx>(null as any);
@@ -110,6 +117,10 @@ export const useApp = () => useContext(C);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [name, setName] = useState('Guest Explorer');
   const [buddy, setBuddy] = useState('🦊');
+  const [buddyId, setBuddyId] = useState('fox');
+  const [buddyBg, setBuddyBg] = useState<string | null>(null);
+  const [favs, setFavs] = useState<string[]>(DEFAULT_FAVS);
+  const [custom, setCustom] = useState<Custom[]>([]);
   const [year, setYear] = useState(2);
   const [stars, setStars] = useState(0);
   const [coins, setCoins] = useState(0);
@@ -139,6 +150,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!alive) return;
       if (d) {
         setName(d.name || 'Guest Explorer'); setBuddy(d.buddy || '🦊'); setYear(d.year || 2);
+        const cu = Array.isArray(d.custom) ? d.custom.filter((x) => x && x.id && x.e) : [];
+        setCustom(cu);
+        setBuddyId(d.buddyId || 'fox'); setBuddyBg(d.buddyBg ?? null);
+        const fv = (Array.isArray(d.favs) ? d.favs : DEFAULT_FAVS).filter((id) => !!findChar(id, cu)).slice(0, MAX_FAVS);
+        setFavs(fv.length ? fv : DEFAULT_FAVS);
         setStars(d.stars || 0); setCoins(d.coins || 0); setAnswered(d.answered || 0); setCorrect(d.correct || 0);
         setRight({ E: d.right?.E || {}, M: d.right?.M || {}, S: d.right?.S || {} });
         setStickers(d.stickers || []);
@@ -156,11 +172,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready) return;
     const t = setTimeout(() => {
-      const data: Saved = { name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streak: streakCount, lastDay, profile };
+      const data: Saved = { name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streak: streakCount, lastDay, profile, buddyId, buddyBg, favs, custom };
       saveJSON(STATE_KEY, data);
     }, 250);
     return () => clearTimeout(t);
-  }, [ready, name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streakCount, lastDay, profile]);
+  }, [ready, name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streakCount, lastDay, profile, buddyId, buddyBg, favs, custom]);
 
   const toggleSound = useCallback(() => {
     const next = !Sound.on;
@@ -175,9 +191,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (t !== 'parent') { setResetNote(false); setParentOpen(false); } // grown-ups area locks again when you leave it
   }, []);
 
-  const enter = useCallback((n: string, b: string, y: number, t: Tab = 'home') => {
-    setName(n); setBuddy(b); setYear(y); setProfile(true); setParentOpen(false); setTabState(t); setScreen('app'); setSettingsOpen(false); Sound.tap();
+  // newest pick goes to the front of the favourites; the list never holds more than MAX_FAVS
+  const promoteFav = useCallback((id: string) => {
+    setFavs((f) => [id, ...f.filter((x) => x !== id)].slice(0, MAX_FAVS));
   }, []);
+  const addFav = useCallback((id: string) => {
+    let ok = true;
+    setFavs((f) => { if (f.includes(id)) return f; if (f.length >= MAX_FAVS) { ok = false; return f; } return [...f, id]; });
+    return ok;
+  }, []);
+  const removeFav = useCallback((id: string) => setFavs((f) => (f.length > 1 ? f.filter((x) => x !== id) : f)), []);
+  const setBuddyChoice = useCallback((id: string) => {
+    const ch = findChar(id, custom);
+    if (!ch) return;
+    setBuddyId(ch.id); setBuddy(ch.e); setBuddyBg(ch.bg ?? null); promoteFav(ch.id);
+  }, [custom, promoteFav]);
+  const createCustom = useCallback((e: string, nm: string, bg: string) => {
+    const id = 'my' + Date.now().toString(36);
+    setCustom((c) => [{ id, e, name: nm.trim() || 'My hero', bg }, ...c]);
+    promoteFav(id);
+    return id;
+  }, [promoteFav]);
+  const deleteCustom = useCallback((id: string) => {
+    setCustom((c) => c.filter((x) => x.id !== id));
+    setFavs((f) => { const n = f.filter((x) => x !== id); return n.length ? n : DEFAULT_FAVS; });
+    setBuddyId((cur) => { if (cur === id) { setBuddy('🦊'); setBuddyBg(null); return 'fox'; } return cur; });
+  }, []);
+
+  const enter = useCallback((n: string, b: { id: string; e: string; bg?: string | null }, y: number, t: Tab = 'home', newPin?: string) => {
+    setName(n); setBuddy(b.e); setBuddyId(b.id); setBuddyBg(b.bg ?? null); promoteFav(b.id);
+    if (newPin) setPin(newPin);
+    setYear(y); setProfile(true); setParentOpen(false); setTabState(t); setScreen('app'); setSettingsOpen(false); Sound.tap();
+  }, [promoteFav]);
 
   const startGame = useCallback((k: GameKind) => {
     Sound.tap(); setGame(k); setGameRun((r) => r + 1); setScreen('game');
@@ -225,8 +270,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, toggleSound,
     screen, tab, setTab, gameSubj, setGameSubj, game, gameRun, parentOpen, setParentOpen, settingsOpen, setSettingsOpen,
     enter, changePlayer, startGame, leaveGame, recordAnswer, finishGame, reset, resetNote, ready, pin, setPin, streak,
+    buddyId, buddyBg, favs, custom, setBuddyChoice, promoteFav, addFav, removeFav, createCustom, deleteCustom,
   }), [name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, toggleSound, screen, tab, setTab,
-    gameSubj, game, gameRun, parentOpen, settingsOpen, enter, changePlayer, startGame, leaveGame, recordAnswer, finishGame, reset, resetNote, ready, pin, streak]);
+    gameSubj, game, gameRun, parentOpen, settingsOpen, enter, changePlayer, startGame, leaveGame, recordAnswer, finishGame, reset, resetNote, ready, pin, streak, buddyId, buddyBg, favs, custom, setBuddyChoice, promoteFav, addFav, removeFav, createCustom, deleteCustom]);
 
   return <C.Provider value={value}>{children}</C.Provider>;
 }

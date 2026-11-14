@@ -1,22 +1,30 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { KeyboardAvoidingView, Modal, Platform, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AGES, FIXED, FONT, usePalette } from '../theme';
+import { AGES, FIXED, FONT, ThemeCtx, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
 import { useApp } from '../state';
 import { useLayout } from '../layout';
 import { SvgXml } from 'react-native-svg';
 import { badgeSvg } from '../logo';
-
-const BUDDIES = ['🦊', '🐼', '🦁', '🐰', '🐸', '🦄', '🐙', '🚀'];
+import { Avatar, Creator, Library } from '../components/Characters';
+import { findChar } from '../data/characters';
 
 export default function Welcome() {
   const p = usePalette();
   const { wide, mid } = useLayout();
   const shadow = useCardShadow();
-  const { enter, soundOn, toggleSound, year: lastYear } = useApp();
+  const { enter, soundOn, toggleSound, year: lastYear, favs, custom, pin, buddyId, createCustom } = useApp();
+  const { pref, setPref } = useContext(ThemeCtx);
   const [name, setName] = useState('');
-  const [buddy, setBuddy] = useState('🦊');
+  const [chosen, setChosen] = useState(buddyId || 'fox');
+  const [more, setMore] = useState<null | 'pick' | 'make'>(null);
+  const [pin1, setPin1] = useState('');
+  const [pin2, setPin2] = useState('');
+  const [err, setErr] = useState('');
+  const cur = findChar(chosen, custom) ?? findChar('fox', custom)!;
+  const me = { id: cur.id, e: cur.e, bg: cur.bg ?? null };
+  const favList = favs.map((id) => findChar(id, custom)).filter((x): x is NonNullable<typeof x> => !!x);
   const [year, setYear] = useState(lastYear || 2);
   const [focus, setFocus] = useState(false);
 
@@ -40,7 +48,14 @@ export default function Welcome() {
                 <T size={28}>{soundOn ? '🔊' : '🔇'}</T>
               </Press>
               <Press
-                onPress={() => enter('Guest Explorer', '🦊', year, 'parent')}
+                onPress={() => setPref(pref === 'dark' ? 'light' : 'dark')}
+                accessibilityLabel="Light or dark theme"
+                style={[{ width: 60, height: 60, borderRadius: 30, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }, shadow]}
+              >
+                <T size={28}>{pref === 'dark' ? '☀️' : '🌙'}</T>
+              </Press>
+              <Press
+                onPress={() => enter('Guest Explorer', me, year, 'parent')}
                 accessibilityLabel="Grown-ups area"
                 style={[{ width: 60, height: 60, borderRadius: 30, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }, shadow]}
               >
@@ -58,7 +73,7 @@ export default function Welcome() {
 
           {/* Play now */}
           <Press
-            onPress={() => enter('Guest Explorer', '🦊', year)}
+            onPress={() => enter('Guest Explorer', me, year)}
             style={[{ backgroundColor: p.navy, borderRadius: 20, padding: 18, flexDirection: 'row', gap: 14, alignItems: 'flex-start', minHeight: 64 }, shadow]}
           >
             <View style={{ width: 56, height: 56, borderRadius: 14, backgroundColor: FIXED.playIcon, alignItems: 'center', justifyContent: 'center' }}>
@@ -101,26 +116,28 @@ export default function Welcome() {
             <T w={600} size={12.5} color={p.muted} style={{ marginTop: 6 }}>First name only — no email or birthday is ever asked for.</T>
 
             <T w={800} size={15} style={{ marginTop: 16, marginBottom: 8 }}>Pick a buddy</T>
-            <View style={{ gap: 10 }}>
-              {[BUDDIES.slice(0, 4), BUDDIES.slice(4)].map((rowB, ri) => (
-                <View key={ri} style={{ flexDirection: 'row', gap: 10 }}>
-                  {rowB.map((b) => {
-                    const sel = b === buddy;
-                    return (
-                      <Press
-                        key={b}
-                        onPress={() => { setBuddy(b); }}
-                        style={{
-                          flex: 1, minHeight: 78, borderRadius: 14, borderWidth: 3, alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: sel ? p.sunny : p.violetSoft, borderColor: sel ? FIXED.buddyBorder : 'transparent',
-                        }}
-                      >
-                        <T size={44} style={{ lineHeight: 54 }}>{b}</T>
-                      </Press>
-                    );
-                  })}
-                </View>
-              ))}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+              {favList.map((c) => {
+                const sel = c.id === chosen;
+                return (
+                  <Press
+                    key={c.id}
+                    onPress={() => setChosen(c.id)}
+                    accessibilityLabel={`Buddy ${c.name}`}
+                    style={{ width: '22%', flexGrow: 1, minHeight: 78, borderRadius: 14, borderWidth: 3, alignItems: 'center', justifyContent: 'center', backgroundColor: sel ? p.sunny : p.violetSoft, borderColor: sel ? FIXED.buddyBorder : 'transparent' }}
+                  >
+                    <Avatar e={c.e} bg={c.bg ?? (p.dark ? '#3A3666' : '#fff')} size={52} />
+                  </Press>
+                );
+              })}
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+              <Press onPress={() => setMore('pick')} accessibilityLabel="More characters" style={{ flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }}>
+                <T w={800} size={14} color={p.ink}>＋ More characters</T>
+              </Press>
+              <Press onPress={() => setMore('make')} accessibilityLabel="Make my own character" style={{ flex: 1, minHeight: 48, borderRadius: 14, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }}>
+                <T w={800} size={14} color={p.ink}>🎨 Make my own</T>
+              </Press>
             </View>
 
             <T w={800} size={15} style={{ marginTop: 16, marginBottom: 8 }}>School year</T>
@@ -144,10 +161,38 @@ export default function Welcome() {
               })}
             </View>
 
+            {!pin ? (
+              <View style={{ marginTop: 16 }}>
+                <T w={800} size={15} style={{ marginBottom: 4 }}>🔒 Grown-ups’ PIN</T>
+                <T w={600} size={12.5} color={p.muted} style={{ marginBottom: 8 }}>A parent chooses 4 numbers. It protects the Grown-ups area.</T>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  {[['Choose PIN', pin1, setPin1], ['Repeat PIN', pin2, setPin2]].map(([ph, v, set]: any) => (
+                    <TextInput
+                      key={ph}
+                      value={v}
+                      onChangeText={(x: string) => { set(x.replace(/\D/g, '').slice(0, 4)); setErr(''); }}
+                      placeholder={ph}
+                      placeholderTextColor={p.muted}
+                      keyboardType="number-pad"
+                      secureTextEntry
+                      maxLength={4}
+                      accessibilityLabel={ph}
+                      style={[{ flex: 1, fontSize: 17, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, borderWidth: 2, borderColor: p.line, backgroundColor: p.bg, color: p.ink, fontFamily: FONT.regular }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]}
+                    />
+                  ))}
+                </View>
+                {err ? <T w={700} size={13} color={p.dangerText} style={{ marginTop: 6 }}>{err}</T> : null}
+              </View>
+            ) : null}
+
             <Press
               onPress={() => {
                 const n = name.replace(/\s+/g, ' ').trim();
-                enter(n || 'Guest Explorer', buddy, year);
+                if (!pin) {
+                  if (pin1.length !== 4) { setErr('Please choose a 4-number PIN.'); return; }
+                  if (pin1 !== pin2) { setErr('The two PINs do not match.'); return; }
+                }
+                enter(n || 'Guest Explorer', me, year, 'home', pin ? undefined : pin1);
               }}
               style={[{ marginTop: 20, backgroundColor: p.sky, borderRadius: 16, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16 }, shadow]}
             >
@@ -161,6 +206,25 @@ export default function Welcome() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Modal visible={more !== null} transparent animationType="fade" onRequestClose={() => setMore(null)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 12 }}>
+          <View style={{ width: '100%', maxWidth: 560, maxHeight: '92%', backgroundColor: p.card, borderRadius: 22, padding: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+              <T w={800} size={20} style={{ flex: 1 }}>{more === 'make' ? 'Make my own character' : 'Choose a character'}</T>
+              <Press onPress={() => setMore(null)} accessibilityLabel="Close" style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }}>
+                <T w={800} size={18}>✕</T>
+              </Press>
+            </View>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {more === 'make' ? (
+                <Creator onCreate={(e, nm, bg) => { const id = createCustom(e, nm, bg); setChosen(id); setMore(null); }} />
+              ) : (
+                <Library custom={custom} favs={favs} selectedId={chosen} mode="pick" onPick={(c) => { setChosen(c.id); setMore(null); }} />
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
