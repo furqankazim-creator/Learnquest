@@ -284,11 +284,19 @@ export default function Game() {
       <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: 26, paddingHorizontal: 20, alignItems: 'center', marginTop: 18 }, shadow]}>
         <T size={48} style={{ letterSpacing: 6, lineHeight: 60 }}>🎉 🎊 🎉</T>
         <T size={64} style={{ letterSpacing: 4, lineHeight: 80 }}>{starStr}</T>
+        {result.sticker ? (
+          <View style={{ alignItems: 'center', marginTop: 10 }}>
+            <View style={{ width: 104, height: 104, borderRadius: 52, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: p.violet }}>
+              <T size={60} style={{ lineHeight: 74 }}>{result.sticker}</T>
+            </View>
+            <T w={800} size={14} color={p.orange} style={{ marginTop: 6 }}>New sticker!</T>
+          </View>
+        ) : null}
         <T w={700} size={24} style={{ marginTop: 8, marginBottom: 4 }}>
           {s === 3 ? 'Amazing work!' : s === 2 ? 'Great job!' : s === 1 ? 'Good trying!' : 'Good effort!'}
         </T>
         <T w={700} size={16} color={p.muted} style={{ textAlign: 'center', marginBottom: 18 }}>
-          You got {result.right} of {result.total} right and earned {result.right * 2} coins{result.sticker ? ` and a new sticker ${result.sticker}` : ''}!
+          You got {result.right} of {result.total} right and earned {result.right * 2} coins{result.sticker ? ' and a new sticker' : ''}!
         </T>
         <Press onPress={() => startGame(k)} style={[{ width: '100%', backgroundColor: p.sky, borderRadius: 16, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16 }, shadow]}>
           <T w={800} size={18} color="#fff">▶ Play again</T>

@@ -101,22 +101,26 @@ export default function Welcome() {
             <T w={600} size={12.5} color={p.muted} style={{ marginTop: 6 }}>First name only — no email or birthday is ever asked for.</T>
 
             <T w={800} size={15} style={{ marginTop: 16, marginBottom: 8 }}>Pick a buddy</T>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              {BUDDIES.map((b) => {
-                const sel = b === buddy;
-                return (
-                  <Press
-                    key={b}
-                    onPress={() => { setBuddy(b); }}
-                    style={{
-                      width: '23%', flexGrow: 1, minHeight: 78, borderRadius: 14, borderWidth: 3, alignItems: 'center', justifyContent: 'center',
-                      backgroundColor: sel ? p.sunny : p.violetSoft, borderColor: sel ? FIXED.buddyBorder : 'transparent',
-                    }}
-                  >
-                    <T size={48} style={{ lineHeight: 58 }}>{b}</T>
-                  </Press>
-                );
-              })}
+            <View style={{ gap: 10 }}>
+              {[BUDDIES.slice(0, 4), BUDDIES.slice(4)].map((rowB, ri) => (
+                <View key={ri} style={{ flexDirection: 'row', gap: 10 }}>
+                  {rowB.map((b) => {
+                    const sel = b === buddy;
+                    return (
+                      <Press
+                        key={b}
+                        onPress={() => { setBuddy(b); }}
+                        style={{
+                          flex: 1, minHeight: 78, borderRadius: 14, borderWidth: 3, alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: sel ? p.sunny : p.violetSoft, borderColor: sel ? FIXED.buddyBorder : 'transparent',
+                        }}
+                      >
+                        <T size={44} style={{ lineHeight: 54 }}>{b}</T>
+                      </Press>
+                    );
+                  })}
+                </View>
+              ))}
             </View>
 
             <T w={800} size={15} style={{ marginTop: 16, marginBottom: 8 }}>School year</T>

@@ -129,7 +129,7 @@ function Dashboard() {
             <T w={700} size={17} style={{ marginBottom: 8 }}>{info.emoji} {info.name} — Year {year}</T>
             <ProgressBar pct={(counts[s] / POOL_SIZE) * 100} color={(p as any)[info.color]} />
             <T w={600} size={14} color={p.muted} style={{ lineHeight: 21, marginTop: 8 }}>
-              {counts[s]} of {POOL_SIZE} {info.name} questions answered right this visit
+              {counts[s]} of {POOL_SIZE} {info.name} questions answered right so far
             </T>
           </View>
         );
