@@ -54,6 +54,10 @@ export const SCI_VIS: Record<number, Record<number, SciSpec>> = {
     21: REFLECT,
     27: chain(it('🌰', 'seed'), it('💧', 'water and warmth'), it('🌱', 'new shoot')),
     32: row(it('🪟', 'window glass'), it('🛍️', 'tissue paper'), it('🚪', 'wooden door')),
+    5: chain(it('🌼', 'a flower'), it('🐝', 'a visitor'), it('🌼', 'another flower')),
+    9: PLANT,
+    11: row(it('🌬️', 'wind'), it('🐕', 'animal fur'), it('💧', 'water')),
+    23: row(it('🥦', 'vegetables'), it('🍎', 'fruit'), it('🍞', 'bread and pasta'), it('🍗', 'protein')),
   },
   4: {
     0: DIGEST, 12: DIGEST, 25: DIGEST,
@@ -89,6 +93,13 @@ const ws = (parts: string[], result: string, note?: string): EngSpec => ({ t: 'w
 const pair = (a: Item, b: Item, label: string): EngSpec => ({ t: 'pair', a, b, label });
 const many = (e: string, one: string, manyW: string): EngSpec => ({ t: 'onemany', e, one, many: manyW });
 const scene = (caption: string, ...items: Item[]): EngSpec => ({ t: 'scene', items, caption });
+const scale = (label: string, ...items: Item[]): EngSpec => ({ t: 'scale', items, label });
+const tip = (title: string, words: { w: string; hi?: number[]; silent?: number[] }[], note?: string): EngSpec => ({ t: 'tip', title, words, note });
+
+const FEELING = scale('same idea, a stronger word', it('😐', 'fine'), it('🙂', 'pleased'), it('😄', 'thrilled'));
+const SIZE = scale('same idea, a stronger word', it('🐭', 'small'), it('🐕', 'big'), it('🐘', 'huge'));
+const SILENT = tip('silent letters', [{ w: 'knee', silent: [0] }, { w: 'write', silent: [0] }, { w: 'lamb', silent: [3] }], 'some letters stay quiet');
+const IBEFOREE = tip('i before e, except after c', [{ w: 'field', hi: [1, 2] }, { w: 'piece', hi: [1, 2] }, { w: 'receive', hi: [3, 4] }]);
 
 export const ENG_VIS: Record<number, Record<number, EngSpec>> = {
   1: {
@@ -168,11 +179,46 @@ export const ENG_VIS: Record<number, Record<number, EngSpec>> = {
 
 // Pictures that would simply state the answer to their own question are left out on purpose.
 const NO_PICTURE_SCI: Record<number, number[]> = {
-  1: [13],
-  4: [3, 4, 6, 14, 19, 24, 25, 32],
-  5: [1, 4, 5, 12, 13, 18, 20, 28, 31],
-  6: [0],
+  1: [7, 10, 13, 14, 17, 28, 34, 35],
+  2: [6, 8],
+  3: [5, 27],
+  4: [0, 2, 3, 4, 6, 12, 14, 18, 19, 24, 25, 28, 29, 32, 35],
+  5: [0, 1, 4, 5, 8, 12, 13, 18, 20, 28, 30, 31],
+  6: [0, 8, 9, 12, 13, 15, 25, 28],
 };
-const NO_PICTURE_ENG: Record<number, number[]> = { 3: [18, 30] };
+const NO_PICTURE_ENG: Record<number, number[]> = { 3: [1, 9, 18, 30], 4: [11, 32], 5: [8, 20, 32], 6: [21, 32] };
 for (const [y, list] of Object.entries(NO_PICTURE_SCI)) for (const i of list) delete SCI_VIS[Number(y)]?.[i];
 for (const [y, list] of Object.entries(NO_PICTURE_ENG)) for (const i of list) delete ENG_VIS[Number(y)]?.[i];
+
+// more English pictures: spelling rules and "same idea, stronger word" scales
+const MORE_ENG: Record<number, Record<number, EngSpec>> = {
+  1: {
+    15: tip('tricky words', [{ w: 'was', hi: [1] }, { w: 'come', hi: [1, 3] }, { w: 'some', hi: [1, 3] }], 'learn these by heart'),
+    19: FEELING,
+    27: tip('the “ou” sound', [{ w: 'mouse', hi: [1, 2] }, { w: 'cloud', hi: [2, 3] }, { w: 'out', hi: [0, 1] }], '“ou” often says “ow”'),
+  },
+  2: {
+    29: tip('“ie” says “ee”', [{ w: 'field', hi: [1, 2] }, { w: 'piece', hi: [1, 2] }, { w: 'chief', hi: [2, 3] }]),
+    35: SILENT,
+  },
+  3: { 4: FEELING, 13: IBEFOREE, 20: SIZE },
+  4: {
+    4: scale('same idea, a stronger word', it('📱', 'new'), it('📻', 'old'), it('🏺', 'antique')),
+    8: SILENT,
+    28: FEELING,
+    32: pair(it('📻', 'old'), it('📱', 'new'), 'opposites mean the reverse'),
+  },
+  5: {
+    12: pair(it('🎁', 'giving'), it('🙅', 'keeping'), 'opposite ideas'),
+    14: scale('how willing?', it('😃', 'keen'), it('😐', 'unsure'), it('😟', 'hesitant')),
+    23: scale('same idea, a stronger word', it('🐜', 'tiny'), it('🐘', 'large'), it('🐋', 'vast')),
+    28: tip('some words hide double letters', [{ w: 'address', hi: [2, 3, 4, 5] }, { w: 'balloon', hi: [2, 3, 4, 5] }, { w: 'success', hi: [2, 3, 4, 5] }]),
+  },
+  6: {
+    2: pair(it('⬆️', 'rise'), it('⬇️', 'fall'), 'opposites mean the reverse'),
+    15: scale('how much is there?', it('🌾', 'abundant'), it('🍀', 'some'), it('💎', 'sparse')),
+    22: scale('same idea, a stronger word', it('😀', 'awake'), it('😪', 'sleepy'), it('😴', 'drained')),
+    28: scale('how careful?', it('💨', 'quick'), it('🔍', 'careful'), it('🧐', 'precise')),
+  },
+};
+for (const [y, m] of Object.entries(MORE_ENG)) Object.assign(ENG_VIS[Number(y)], m);

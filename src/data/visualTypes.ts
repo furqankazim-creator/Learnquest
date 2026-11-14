@@ -39,4 +39,6 @@ export type EngSpec =
   | { t: 'marks' }
   | { t: 'wordclass' }
   | { t: 'clause'; a: string; c: string; b: string }
-  | { t: 'voice'; active: string; passive: string };
+  | { t: 'voice'; active: string; passive: string }
+  | { t: 'scale'; items: Item[]; label: string }
+  | { t: 'tip'; title: string; words: { w: string; hi?: number[]; silent?: number[] }[]; note?: string };

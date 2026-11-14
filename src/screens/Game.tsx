@@ -109,9 +109,10 @@ function MatchCard({ label, emoji, state, onPress }: { label: string; emoji?: st
   );
 }
 
-function Balloon({ label, color, popped, onPress, w = 76, long = false, compact = false, tight = false, wrong = false }: { label: string; color: string; popped: boolean; onPress: () => void; w?: number; long?: boolean; compact?: boolean; tight?: boolean; wrong?: boolean }) {
+function Balloon({ label, color, popped, onPress, w = 76, long = false, compact = false, tight = false, wrong = false, emoji }: { label: string; color: string; popped: boolean; onPress: () => void; w?: number; long?: boolean; compact?: boolean; tight?: boolean; wrong?: boolean; emoji?: string }) {
   const h = long ? Math.round(w * (compact ? (tight ? 0.52 : 0.66) : 1.1)) : Math.round(w * 1.26);
-  const fs = !long ? (label.length > 5 ? 17 : 24) : label.length <= 12 ? 20 : label.length <= 24 ? 17 : label.length <= 40 ? 15 : 13;
+  const fs0 = !long ? (label.length > 5 ? 17 : 24) : label.length <= 12 ? 20 : label.length <= 24 ? 17 : label.length <= 40 ? 15 : 13;
+  const fs = emoji ? Math.min(fs0, long ? 16 : 14) : fs0;
   const [scale] = useState(() => new Animated.Value(1));
   const [fade] = useState(() => new Animated.Value(1));
   useEffect(() => {
@@ -133,6 +134,7 @@ function Balloon({ label, color, popped, onPress, w = 76, long = false, compact 
           }}
         >
           <View style={{ position: 'absolute', top: 12, left: w * 0.18, width: 14, height: 22, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.25)', transform: [{ rotate: '20deg' }] }} />
+          {emoji ? <T size={long ? 28 : 24} style={{ lineHeight: long ? 34 : 29 }}>{emoji}</T> : null}
           <T w={800} size={fs} color="#fff" numberOfLines={long ? 6 : 1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ textAlign: 'center', lineHeight: long ? fs * 1.2 : undefined }}>{label}</T>
           {wrong ? <View style={{ position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}><T w={800} size={16} color="#FF6B6B">✕</T></View> : null}
         </View>
@@ -337,7 +339,7 @@ export default function Game() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
               {q.opts.map((o, oi) => (
                 <View key={`${i}-${oi}`} style={{ opacity: wrongSet[oi] ? 0.45 : 1 }} pointerEvents={wrongSet[oi] ? 'none' : 'auto'}>
-                  <Balloon label={o} compact={compact} tight={compact && (!!q.sv || !!q.ev || q.subj === 'M' || q.q.length > 55)} wrong={!!wrongSet[oi]} long={longBalloons} w={longBalloons ? balloonW : wide ? 110 : Math.min(76, Math.floor((balloonAvail - 30) / 4))} color={FIXED.balloons[oi % 4]} popped={chosen === oi} onPress={() => answer(q, oi)} />
+                  <Balloon label={o} emoji={q.oe?.[oi]} compact={compact} tight={compact && (!!q.sv || !!q.ev || q.subj === 'M' || q.q.length > 55)} wrong={!!wrongSet[oi]} long={longBalloons} w={longBalloons ? balloonW : wide ? 110 : Math.min(76, Math.floor((balloonAvail - 30) / 4))} color={FIXED.balloons[oi % 4]} popped={chosen === oi} onPress={() => answer(q, oi)} />
                 </View>
               ))}
             </View>
@@ -356,7 +358,10 @@ export default function Game() {
                     backgroundColor: ok ? p.greenSoft : p.card, borderColor: ok ? p.green : bad ? p.coral : p.line, opacity: bad ? 0.75 : 1,
                   }, shadow]}
                 >
-                  <T w={800} size={compact ? 19 : 21} style={{ textAlign: 'center' }}>{o}</T>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    {q.oe?.[oi] ? <T size={compact ? 26 : 32} style={{ lineHeight: compact ? 32 : 40 }}>{q.oe[oi]}</T> : null}
+                    <T w={800} size={compact ? (q.oe?.[oi] ? 17 : 19) : 21} style={{ textAlign: 'center', flexShrink: 1 }}>{o}</T>
+                  </View>
                 </Press>
               );
             })}

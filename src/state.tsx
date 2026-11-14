@@ -10,6 +10,8 @@ import { FIX } from './data/fixes';
 import { EX_E, EX_S } from './data/examples';
 import { ENG_VIS, SCI_VIS } from './data/visuals';
 import type { EngSpec, SciSpec } from './data/visualTypes';
+import { emojiForOptions } from './data/optionEmoji';
+import { PIC_FIX } from './data/pictureFixes';
 import { STATE_KEY, dayKey, loadJSON, saveJSON, yesterdayKey } from './storage';
 
 export const STICKERS = ['🌟', '🦁', '🚀', '🌈', '🐢', '🍎', '🔭', '🏅', '🦋', '🎨', '🧲', '🌻'];
@@ -34,7 +36,7 @@ export function poolFor(subj: Subj, year: number): RawQ[] {
   });
 }
 
-export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string; sv?: SciSpec; ev?: EngSpec };
+export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string; sv?: SciSpec; ev?: EngSpec; oe?: (string | undefined)[] };
 
 // what the voice reads aloud: the passage (if any) and then the question
 export const spoken = (q: Q) => (q.p ? `${q.p} ${q.q}` : q.q);
@@ -53,7 +55,10 @@ function toQ(raw: RawQ, subj: Subj, idx: number, year: number): Q {
   // textbook-style picture for many English and Science questions
   const sv = subj === 'S' ? SCI_VIS[year]?.[idx] : undefined;
   const ev = subj === 'E' ? ENG_VIS[year]?.[idx] : undefined;
-  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6], p: raw[7], ex, sv, ev };
+  const opts = shuffle([raw[1], raw[2], raw[3], raw[4]]);
+  // a small picture on each answer when most answers are things we can draw (English and Science only)
+  const oe = subj === 'M' ? undefined : emojiForOptions(opts) ?? undefined;
+  return { q: raw[0], a: raw[1], opts, e: PIC_FIX[`${subj}${year}.${idx}`] ?? raw[5], subj, idx, x: raw[6], p: raw[7], ex, sv, ev, oe };
 }
 // noPassage: Match It cannot show a reading passage, so it only uses stand-alone questions
 export function questionsFor(subj: Subj, year: number, count: number, noPassage = false): Q[] {

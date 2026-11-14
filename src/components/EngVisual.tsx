@@ -213,6 +213,53 @@ function Voice({ s, p }: { s: Extract<EngSpec, { t: 'voice' }>; p: Palette }) {
   );
 }
 
+function Scale({ s, p }: { s: Extract<EngSpec, { t: 'scale' }>; p: Palette }) {
+  const n = s.items.length;
+  const gap = 280 / n;
+  return (
+    <G>
+      {s.items.map((it, i) => (
+        <G key={i}>
+          <Em x={20 + gap * i + gap / 2} y={56} size={44 + i * 4}>{it.e}</Em>
+          <L x={20 + gap * i + gap / 2} y={110} size={15} color={p.ink}>{it.l}</L>
+        </G>
+      ))}
+      <Arrow x1={40} y1={128} x2={284} y2={128} color={p.orange} w={4} />
+      <L x={160} y={156} size={12.5} color={p.muted}>{s.label}</L>
+    </G>
+  );
+}
+
+function Tip({ s, p }: { s: Extract<EngSpec, { t: 'tip' }>; p: Palette }) {
+  const rowH = 38;
+  const y0 = 40;
+  return (
+    <G>
+      <L x={160} y={24} size={14} color={p.ink}>{s.title}</L>
+      {s.words.map((wd, r) => {
+        const n = wd.w.length;
+        const cell = Math.min(26, 250 / n);
+        const x0 = (320 - n * (cell + 3) + 3) / 2;
+        return (
+          <G key={wd.w}>
+            {wd.w.split('').map((ch, i) => {
+              const hi = wd.hi?.includes(i), si = wd.silent?.includes(i);
+              return (
+                <G key={i}>
+                  <Rect x={x0 + i * (cell + 3)} y={y0 + r * rowH} width={cell} height={32} rx={7} fill={hi ? p.orange : '#fff'} fillOpacity={si ? 0.35 : hi ? 1 : p.dark ? 0.9 : 1} stroke={p.ink} strokeOpacity={0.3} strokeWidth={1.5} />
+                  <L x={x0 + i * (cell + 3) + cell / 2} y={y0 + r * rowH + 23} size={19} color={hi ? '#fff' : '#2D2A4A'}>{ch}</L>
+                  {si ? <Line x1={x0 + i * (cell + 3) + 3} y1={y0 + r * rowH + 29} x2={x0 + i * (cell + 3) + cell - 3} y2={y0 + r * rowH + 3} stroke={p.coral} strokeWidth={3} /> : null}
+                </G>
+              );
+            })}
+          </G>
+        );
+      })}
+      {s.note ? <L x={160} y={VH - 8} size={12} color={p.muted}>{s.note}</L> : null}
+    </G>
+  );
+}
+
 function Picture({ s, p }: { s: EngSpec; p: Palette }) {
   switch (s.t) {
     case 'wordsum': return <WordSum s={s} p={p} />;
@@ -227,6 +274,8 @@ function Picture({ s, p }: { s: EngSpec; p: Palette }) {
     case 'wordclass': return <WordClass p={p} />;
     case 'clause': return <Clause s={s} p={p} />;
     case 'voice': return <Voice s={s} p={p} />;
+    case 'scale': return <Scale s={s} p={p} />;
+    case 'tip': return <Tip s={s} p={p} />;
   }
 }
 
