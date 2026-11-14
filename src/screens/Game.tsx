@@ -7,7 +7,7 @@ import { GameKind, Q, mixedQuestions, questionsFor, shuffle, spoken, useApp } fr
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
 import MathVisual from '../components/MathVisual';
-import { parseViz } from '../mathViz';
+import { exampleText, parseViz } from '../mathViz';
 
 const TITLES: Record<GameKind, string> = {
   balloon: '🎈 Balloon Pop', rescue: '🦸 Rescue Quiz', match: '🧩 Match It', quiz: '⚡ Quick Quiz', mission: '🗺️ Daily Mission',
@@ -17,7 +17,7 @@ const shortQ = (q: string) => (q.length <= 64 ? q : q.slice(0, 62) + '…');
 
 type Feedback = { text: string; good: boolean; note?: string } | null;
 
-function QuestionCard({ q, extra }: { q: Q; extra?: string }) {
+function QuestionCard({ q, extra, help, onHelp }: { q: Q; extra?: string; help: boolean; onHelp: () => void }) {
   const p = usePalette();
   const shadow = useCardShadow();
   const { year } = useApp();
@@ -26,6 +26,7 @@ function QuestionCard({ q, extra }: { q: Q; extra?: string }) {
   const al = wide ? 'flex-start' : 'center';
   // Maths questions get a picture of the actual problem (blocks, groups, number line, clock…)
   const viz = q.subj === 'M' ? parseViz(q.q, q.e) : null;
+  const example = viz ? exampleText(viz, q.q) : null;
   return (
     <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: 22, paddingHorizontal: wide ? 32 : 18, alignItems: 'center', flexDirection: wide ? 'row' : 'column', gap: wide ? 36 : 0 }, shadow]}>
       {viz ? (
@@ -47,6 +48,21 @@ function QuestionCard({ q, extra }: { q: Q; extra?: string }) {
         <Press onPress={() => Sound.speak(spoken(q))} style={{ marginTop: 10, backgroundColor: p.sunny, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 20, minHeight: 50, justifyContent: 'center' }}>
           <T w={800} size={15} color="#2D2A4A">{q.p ? '🔊 Hear the story and question' : '🔊 Hear the question'}</T>
         </Press>
+        {example ? (
+          <View style={{ alignSelf: 'stretch', marginTop: 10, alignItems: wide ? 'flex-start' : 'center' }}>
+            <Press
+              onPress={() => { onHelp(); if (!help) Sound.speak(example); else Sound.stopSpeak(); }}
+              style={{ backgroundColor: help ? p.greenSoft : p.violetSoft, borderRadius: 999, paddingVertical: 10, paddingHorizontal: 18, minHeight: 46, justifyContent: 'center', borderWidth: 2, borderColor: help ? p.green : 'transparent' }}
+            >
+              <T w={800} size={14.5}>{help ? '💡 Hide the example' : '💡 Real-life example'}</T>
+            </Press>
+            {help ? (
+              <View style={{ alignSelf: 'stretch', marginTop: 10, backgroundColor: p.greenSoft, borderRadius: 16, padding: 14, borderLeftWidth: 5, borderLeftColor: p.green }}>
+                <T w={700} size={wide ? 17 : 15.5} style={{ lineHeight: wide ? 26 : 23, textAlign: 'left' }}>{example}</T>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -140,6 +156,7 @@ export default function Game() {
   const [i, setI] = useState(0);
   const [right, setRight] = useState(0);
   const [locked, setLocked] = useState(false);
+  const [help, setHelp] = useState(false);
   const [fb, setFb] = useState<Feedback>(null);
   const [wrongSet, setWrongSet] = useState<Record<number, boolean>>({});
   const [chosen, setChosen] = useState<number | null>(null);
@@ -184,12 +201,13 @@ export default function Game() {
       Sound.speak('Well done! That is right!');
       timer.current = setTimeout(() => {
         if (i + 1 >= qs.length) finish(nr, qs.length);
-        else { setI(i + 1); setLocked(false); setFb(null); setWrongSet({}); setChosen(null); }
+        else { setI(i + 1); setLocked(false); setFb(null); setWrongSet({}); setChosen(null); setHelp(false); }
       }, q.x ? 2800 : 1400);
     } else {
       setWrongSet((w) => ({ ...w, [optIdx]: true }));
       recordAnswer(q, false); Sound.tryAgain();
       setFb({ text: '💪 Good try! Have another go.', good: false });
+      setHelp(true); // a wrong answer opens the real-life example to help
     }
   };
 
@@ -302,7 +320,7 @@ export default function Game() {
     const longBalloons = k === 'balloon' && q.opts.some((o) => o.length > 6);
     body = (
       <View>
-        <QuestionCard q={q} extra={k === 'rescue' ? `${buddy} needs your help — rescue step ${i + 1} of ${qs.length} 🔓` : undefined} />
+        <QuestionCard q={q} help={help} onHelp={() => setHelp((h) => !h)} extra={k === 'rescue' ? `${buddy} needs your help — rescue step ${i + 1} of ${qs.length} 🔓` : undefined} />
         {k === 'balloon' ? (
           <View style={{ backgroundColor: p.dark ? '#2D3C69' : '#D6F0FF', borderRadius: 22, paddingTop: 18, paddingBottom: 14, paddingHorizontal: 12, marginTop: 14, overflow: 'hidden' }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>

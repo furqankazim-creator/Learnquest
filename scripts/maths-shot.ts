@@ -25,6 +25,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     await page.evaluate(() => { const b = Array.from(document.querySelectorAll('div')).find((e) => (e as HTMLElement).innerText?.trim() === '←') as HTMLElement; b?.click(); });
     await sleep(400); await click('Games'); await sleep(300);
   }
+  await click('💡 Real-life example'); await sleep(600);
   await page.screenshot({ path: OUT });
   await b.close();
 })();
