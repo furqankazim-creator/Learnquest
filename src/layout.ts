@@ -12,6 +12,7 @@ export function useLayout() {
     height,
     wide,
     mid,
+    compact: !wide && height < 860,
     contentMax: wide ? 1040 : mid ? 680 : 480,
     gameMax: wide ? 980 : mid ? 680 : 480,
   };

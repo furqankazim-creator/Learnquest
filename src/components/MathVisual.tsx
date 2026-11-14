@@ -534,7 +534,7 @@ function Picture({ v, p }: { v: Viz; p: Palette }) {
 }
 
 // The animated panel that replaces the plain emoji on Maths questions
-export default function MathVisual({ viz, wide }: { viz: Viz; wide?: boolean }) {
+export default function MathVisual({ viz, wide, compact }: { viz: Viz; wide?: boolean; compact?: boolean }) {
   const p = usePalette();
   const [pop] = useState(() => new Animated.Value(0));
   const [bob] = useState(() => new Animated.Value(0));
@@ -553,7 +553,7 @@ export default function MathVisual({ viz, wide }: { viz: Viz; wide?: boolean }) 
   return (
     <Animated.View
       style={{
-        alignSelf: wide ? 'center' : 'stretch', width: wide ? 320 : undefined, maxWidth: 380, height: 170, borderRadius: 22,
+        alignSelf: wide ? 'center' : 'stretch', width: wide ? 320 : undefined, maxWidth: 380, height: compact ? 128 : 170, borderRadius: 22,
         backgroundColor: p.orangeSoft, overflow: 'hidden', opacity: pop,
         transform: [
           { scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) },

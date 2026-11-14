@@ -17,50 +17,52 @@ const shortQ = (q: string) => (q.length <= 64 ? q : q.slice(0, 62) + '…');
 
 type Feedback = { text: string; good: boolean; note?: string } | null;
 
-function QuestionCard({ q, extra, help, onHelp }: { q: Q; extra?: string; help: boolean; onHelp: () => void }) {
+function QuestionCard({ q, extra, help, hint, onHelp }: { q: Q; extra?: string; help: boolean; hint: boolean; onHelp: () => void }) {
   const p = usePalette();
   const shadow = useCardShadow();
   const { year } = useApp();
-  const { wide } = useLayout();
+  const { wide, compact } = useLayout();
   const s = SUBJECTS[q.subj];
   const al = wide ? 'flex-start' : 'center';
   // Maths questions get a picture of the actual problem (blocks, groups, number line, clock…)
   const viz = q.subj === 'M' ? parseViz(q.q, q.e) : null;
   const example = viz ? exampleText(viz, q.q) : q.ex ?? null;
+  const circle = wide ? 170 : compact ? 96 : 168;
+  const btn = { borderRadius: 999, paddingVertical: compact ? 8 : 12, paddingHorizontal: 16, minHeight: compact ? 42 : 50, justifyContent: 'center' } as const;
   return (
-    <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: 22, paddingHorizontal: wide ? 32 : 18, alignItems: 'center', flexDirection: wide ? 'row' : 'column', gap: wide ? 36 : 0 }, shadow]}>
+    <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: compact ? 12 : 22, paddingHorizontal: wide ? 32 : 16, alignItems: 'center', flexDirection: wide ? 'row' : 'column', gap: wide ? 36 : 0 }, shadow]}>
       {viz ? (
-        <MathVisual key={q.q} viz={viz} wide={wide} />
+        <MathVisual key={q.q} viz={viz} wide={wide} compact={compact} />
       ) : (
-        <View style={{ width: wide ? 170 : 168, height: wide ? 170 : 168, borderRadius: 85, backgroundColor: (p as any)[s.soft], alignItems: 'center', justifyContent: 'center', marginBottom: wide ? 0 : 4 }}>
-          <T size={110} style={{ lineHeight: 134 }}>{q.e}</T>
+        <View style={{ width: circle, height: circle, borderRadius: circle / 2, backgroundColor: (p as any)[s.soft], alignItems: 'center', justifyContent: 'center', marginBottom: wide ? 0 : 4 }}>
+          <T size={circle * 0.65} style={{ lineHeight: circle * 0.8 }}>{q.e}</T>
         </View>
       )}
-      <View style={{ flex: wide ? 1 : undefined, alignItems: al }}>
-        {extra ? <T w={800} size={15} color={p.muted} style={{ textAlign: wide ? 'left' : 'center' }}>{extra}</T> : null}
+      <View style={{ flex: wide ? 1 : undefined, alignItems: al, alignSelf: wide ? undefined : 'stretch' }}>
+        {extra ? <T w={800} size={14} color={p.muted} style={{ textAlign: wide ? 'left' : 'center', marginTop: compact ? 4 : 0 }}>{extra}</T> : null}
         {q.p ? (
-          <View style={{ alignSelf: 'stretch', backgroundColor: p.violetSoft, borderRadius: 16, padding: 14, marginTop: 10, borderLeftWidth: 5, borderLeftColor: p.violet }}>
-            <T w={700} size={wide ? 18 : 16} style={{ lineHeight: wide ? 27 : 24, textAlign: 'left' }}>{q.p}</T>
+          <View style={{ alignSelf: 'stretch', backgroundColor: p.violetSoft, borderRadius: 16, padding: 12, marginTop: 8, borderLeftWidth: 5, borderLeftColor: p.violet }}>
+            <T w={700} size={wide ? 18 : 15.5} style={{ lineHeight: wide ? 27 : 22, textAlign: 'left' }}>{q.p}</T>
           </View>
         ) : null}
-        <T w={800} size={wide ? 28 : 22} style={{ lineHeight: wide ? 37 : 29.7, textAlign: wide ? 'left' : 'center', marginTop: 10, marginBottom: 4 }}>{q.q}</T>
-        <T w={700} size={13.5} color={p.muted}>{s.emoji} {s.name} • Year {year}</T>
-        <Press onPress={() => Sound.speak(spoken(q))} style={{ marginTop: 10, backgroundColor: p.sunny, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 20, minHeight: 50, justifyContent: 'center' }}>
-          <T w={800} size={15} color="#2D2A4A">{q.p ? '🔊 Hear the story and question' : '🔊 Hear the question'}</T>
-        </Press>
-        {example ? (
-          <View style={{ alignSelf: 'stretch', marginTop: 10, alignItems: wide ? 'flex-start' : 'center' }}>
+        <T w={800} size={wide ? 28 : compact ? 20 : 22} style={{ lineHeight: wide ? 37 : compact ? 26 : 29.7, textAlign: wide ? 'left' : 'center', marginTop: compact ? 6 : 10, marginBottom: 2 }}>{q.q}</T>
+        <T w={700} size={13} color={p.muted} style={{ textAlign: wide ? 'left' : 'center' }}>{s.emoji} {s.name} • Year {year}</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: compact ? 8 : 10, justifyContent: wide ? 'flex-start' : 'center' }}>
+          <Press onPress={() => Sound.speak(spoken(q))} style={[{ backgroundColor: p.sunny }, btn]}>
+            <T w={800} size={14.5} color="#2D2A4A">{q.p ? '🔊 Story' : '🔊 Hear it'}</T>
+          </Press>
+          {example ? (
             <Press
               onPress={() => { onHelp(); if (!help) Sound.speak(example); else Sound.stopSpeak(); }}
-              style={{ backgroundColor: help ? p.greenSoft : p.violetSoft, borderRadius: 999, paddingVertical: 10, paddingHorizontal: 18, minHeight: 46, justifyContent: 'center', borderWidth: 2, borderColor: help ? p.green : 'transparent' }}
+              style={[{ backgroundColor: help ? p.greenSoft : hint ? p.orangeSoft : p.violetSoft, borderWidth: 2, borderColor: help ? p.green : hint ? p.orange : 'transparent' }, btn]}
             >
-              <T w={800} size={14.5}>{help ? '💡 Hide the example' : '💡 Real-life example'}</T>
+              <T w={800} size={14.5}>{help ? '💡 Hide' : hint ? (compact ? '💡 Hint?' : '💡 Need a hint?') : compact ? '💡 Example' : '💡 Real-life example'}</T>
             </Press>
-            {help ? (
-              <View style={{ alignSelf: 'stretch', marginTop: 10, backgroundColor: p.greenSoft, borderRadius: 16, padding: 14, borderLeftWidth: 5, borderLeftColor: p.green }}>
-                <T w={700} size={wide ? 17 : 15.5} style={{ lineHeight: wide ? 26 : 23, textAlign: 'left' }}>{example}</T>
-              </View>
-            ) : null}
+          ) : null}
+        </View>
+        {example && help ? (
+          <View style={{ alignSelf: 'stretch', marginTop: 10, backgroundColor: p.greenSoft, borderRadius: 16, padding: 12, borderLeftWidth: 5, borderLeftColor: p.green }}>
+            <T w={700} size={wide ? 17 : 15} style={{ lineHeight: wide ? 26 : 22, textAlign: 'left' }}>{example}</T>
           </View>
         ) : null}
       </View>
@@ -71,7 +73,7 @@ function QuestionCard({ q, extra, help, onHelp }: { q: Q; extra?: string; help: 
 function FeedbackLine({ fb }: { fb: Feedback }) {
   const p = usePalette();
   return (
-    <View style={{ minHeight: 30, marginTop: 14, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ minHeight: 32, marginTop: 10, marginBottom: 2, alignItems: 'center', justifyContent: 'center' }}>
       {fb ? <T w={800} size={17} color={fb.good ? p.green : p.orange} style={{ textAlign: 'center' }}>{fb.text}</T> : null}
       {fb?.note ? (
         <View style={{ marginTop: 10, backgroundColor: p.card, borderRadius: 16, paddingVertical: 10, paddingHorizontal: 14, alignSelf: 'stretch' }}>
@@ -101,8 +103,8 @@ function MatchCard({ label, emoji, state, onPress }: { label: string; emoji?: st
   );
 }
 
-function Balloon({ label, color, popped, onPress, w = 76, long = false }: { label: string; color: string; popped: boolean; onPress: () => void; w?: number; long?: boolean }) {
-  const h = long ? Math.round(w * 1.1) : Math.round(w * 1.26);
+function Balloon({ label, color, popped, onPress, w = 76, long = false, compact = false, wrong = false }: { label: string; color: string; popped: boolean; onPress: () => void; w?: number; long?: boolean; compact?: boolean; wrong?: boolean }) {
+  const h = long ? Math.round(w * (compact ? 0.66 : 1.1)) : Math.round(w * 1.26);
   const fs = !long ? (label.length > 5 ? 17 : 24) : label.length <= 12 ? 20 : label.length <= 24 ? 17 : label.length <= 40 ? 15 : 13;
   const [scale] = useState(() => new Animated.Value(1));
   const [fade] = useState(() => new Animated.Value(1));
@@ -116,7 +118,7 @@ function Balloon({ label, color, popped, onPress, w = 76, long = false }: { labe
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [popped]);
   return (
-    <Animated.View style={{ transform: [{ scale }], opacity: fade, alignItems: 'center', height: h + 28 }}>
+    <Animated.View style={{ transform: [{ scale }], opacity: fade, alignItems: 'center', height: h + (compact ? 24 : 28) }}>
       <Press onPress={onPress}>
         <View
           style={{
@@ -126,6 +128,7 @@ function Balloon({ label, color, popped, onPress, w = 76, long = false }: { labe
         >
           <View style={{ position: 'absolute', top: 12, left: w * 0.18, width: 14, height: 22, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.25)', transform: [{ rotate: '20deg' }] }} />
           <T w={800} size={fs} color="#fff" numberOfLines={long ? 6 : 1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ textAlign: 'center', lineHeight: long ? fs * 1.2 : undefined }}>{label}</T>
+          {wrong ? <View style={{ position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}><T w={800} size={16} color="#FF6B6B">✕</T></View> : null}
         </View>
         <View style={{ alignSelf: 'center', width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 8, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: color, marginTop: -2 }} />
         <View style={{ alignSelf: 'center', width: 2, height: 16, backgroundColor: 'rgba(45,42,74,0.35)' }} />
@@ -136,7 +139,7 @@ function Balloon({ label, color, popped, onPress, w = 76, long = false }: { labe
 
 export default function Game() {
   const p = usePalette();
-  const { width: winW, wide, gameMax } = useLayout();
+  const { width: winW, wide, gameMax, compact } = useLayout();
   // wide balloons (2 per row on phones, 4 per row on desktop) when any answer is longer than a word or two
   const balloonCols = wide ? 4 : 2;
   const balloonAvail = Math.min(winW, gameMax) - 32 - 24;
@@ -157,6 +160,7 @@ export default function Game() {
   const [right, setRight] = useState(0);
   const [locked, setLocked] = useState(false);
   const [help, setHelp] = useState(false);
+  const [hint, setHint] = useState(false);
   const [fb, setFb] = useState<Feedback>(null);
   const [wrongSet, setWrongSet] = useState<Record<number, boolean>>({});
   const [chosen, setChosen] = useState<number | null>(null);
@@ -201,13 +205,13 @@ export default function Game() {
       Sound.speak('Well done! That is right!');
       timer.current = setTimeout(() => {
         if (i + 1 >= qs.length) finish(nr, qs.length);
-        else { setI(i + 1); setLocked(false); setFb(null); setWrongSet({}); setChosen(null); setHelp(false); }
+        else { setI(i + 1); setLocked(false); setFb(null); setWrongSet({}); setChosen(null); setHelp(false); setHint(false); }
       }, q.x ? 2800 : 1400);
     } else {
       setWrongSet((w) => ({ ...w, [optIdx]: true }));
       recordAnswer(q, false); Sound.tryAgain();
       setFb({ text: '💪 Good try! Have another go.', good: false });
-      setHelp(true); // a wrong answer opens the real-life example to help
+      setHint(true); // after a wrong answer the 💡 button highlights; the child taps it if they want the example
     }
   };
 
@@ -320,19 +324,20 @@ export default function Game() {
     const longBalloons = k === 'balloon' && q.opts.some((o) => o.length > 6);
     body = (
       <View>
-        <QuestionCard q={q} help={help} onHelp={() => setHelp((h) => !h)} extra={k === 'rescue' ? `${buddy} needs your help — rescue step ${i + 1} of ${qs.length} 🔓` : undefined} />
+        <QuestionCard q={q} help={help} hint={hint} onHelp={() => setHelp((h) => !h)} extra={k === 'rescue' ? `${buddy} needs your help — rescue step ${i + 1} of ${qs.length} 🔓` : undefined} />
+        <FeedbackLine fb={fb} />
         {k === 'balloon' ? (
-          <View style={{ backgroundColor: p.dark ? '#2D3C69' : '#D6F0FF', borderRadius: 22, paddingTop: 18, paddingBottom: 14, paddingHorizontal: 12, marginTop: 14, overflow: 'hidden' }}>
+          <View style={{ backgroundColor: p.dark ? '#2D3C69' : '#D6F0FF', borderRadius: 22, paddingTop: compact ? 10 : 18, paddingBottom: compact ? 4 : 14, paddingHorizontal: 12, marginTop: 6, overflow: 'hidden' }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
               {q.opts.map((o, oi) => (
-                <View key={oi} style={{ opacity: wrongSet[oi] ? 0.35 : 1 }} pointerEvents={wrongSet[oi] ? 'none' : 'auto'}>
-                  <Balloon label={o} long={longBalloons} w={longBalloons ? balloonW : wide ? 110 : 76} color={FIXED.balloons[oi % 4]} popped={chosen === oi} onPress={() => answer(q, oi)} />
+                <View key={`${i}-${oi}`} style={{ opacity: wrongSet[oi] ? 0.45 : 1 }} pointerEvents={wrongSet[oi] ? 'none' : 'auto'}>
+                  <Balloon label={o} compact={compact} wrong={!!wrongSet[oi]} long={longBalloons} w={longBalloons ? balloonW : wide ? 110 : Math.min(76, Math.floor((balloonAvail - 30) / 4))} color={FIXED.balloons[oi % 4]} popped={chosen === oi} onPress={() => answer(q, oi)} />
                 </View>
               ))}
             </View>
           </View>
         ) : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: compact ? 10 : 12, marginTop: 6 }}>
             {q.opts.map((o, oi) => {
               const ok = chosen === oi; const bad = !!wrongSet[oi];
               return (
@@ -341,17 +346,16 @@ export default function Game() {
                   disabled={bad}
                   onPress={() => answer(q, oi)}
                   style={[{
-                    width: '47.5%', flexGrow: 1, minHeight: 80, borderRadius: 18, borderWidth: 3, paddingVertical: 18, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center',
+                    width: '47.5%', flexGrow: 1, minHeight: compact ? 58 : 80, borderRadius: 18, borderWidth: 3, paddingVertical: compact ? 8 : 18, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center',
                     backgroundColor: ok ? p.greenSoft : p.card, borderColor: ok ? p.green : bad ? p.coral : p.line, opacity: bad ? 0.75 : 1,
                   }, shadow]}
                 >
-                  <T w={800} size={21} style={{ textAlign: 'center' }}>{o}</T>
+                  <T w={800} size={compact ? 19 : 21} style={{ textAlign: 'center' }}>{o}</T>
                 </Press>
               );
             })}
           </View>
         )}
-        <FeedbackLine fb={fb} />
       </View>
     );
   }
