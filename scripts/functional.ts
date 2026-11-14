@@ -73,12 +73,7 @@ async function playQuiz(page: Page, game: string, count: number, mistakeFirst = 
   await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'networkidle0' }); await sl(500);
 
   console.log('\n--- Welcome and profile ---');
-  check('first launch: a grown-up is asked to create a PIN first', (await has(page, 'Welcome, grown-up')) && (await has(page, 'Set a grown-ups’ PIN')));
-  const digits0 = async (x: string) => { for (const d of x) await tap(page, d, { minTop: 200, last: true }); await sl(500); };
-  await digits0('1234');
-  check('first launch: asks to type the PIN again', await has(page, 'Type the PIN again'));
-  await digits0('1234');
-  check('welcome screen loads after the PIN is created', await has(page, 'Who is learning today?'));
+  check('welcome screen loads', await has(page, 'Who is learning today?'));
   const inputs = await page.$$('input');
   await inputs[0].type('Mia'); await sl(200);
   check('welcome: shows only 8 favourite characters + More/Make buttons', (await has(page, 'More characters')) && (await has(page, 'Make my own')));
@@ -92,6 +87,12 @@ async function playQuiz(page: Page, game: string, count: number, mistakeFirst = 
   await (await page.$$('input'))[1].type('Captain Star'); await sl(200);
   await tap(page, 'Save my character', { starts: true }); await sl(500);
   check('characters: own character is created and closes the dialog', !(await has(page, 'Make my own character')));
+  const inp2 = await page.$$('input');
+  await tap(page, 'Start learning', { starts: true }); await sl(300);
+  check('PIN on the profile page: refuses to start without a PIN', await has(page, 'Please choose a 4-number PIN'));
+  await inp2[1].type('1234'); await inp2[2].type('9999'); await tap(page, 'Start learning', { starts: true }); await sl(300);
+  check('PIN on the profile page: mismatched PINs are rejected', await has(page, 'do not match'));
+  await inp2[2].focus(); for (let k = 0; k < 4; k++) await page.keyboard.press('Backspace'); await inp2[2].type('1234');
   await tap(page, '🐼'); await tap(page, 'Year 2', { starts: true });
   await tap(page, 'Start learning', { starts: true }); await sl(600);
   check('profile: name shown in header', await has(page, 'Mia'));
@@ -176,9 +177,9 @@ async function playQuiz(page: Page, game: string, count: number, mistakeFirst = 
   // keypad keys come after the on-screen typed number in the page, so tap the LAST match
   const digits = async (s: string) => { for (const d of s) await tap(page, d, { minTop: 200, last: true }); await sl(500); };
   await tap(page, 'Parent'); await sl(400);
-  check('PIN: already set at sign-up, so the area asks for it', await has(page, 'Enter your PIN'));
+  check('PIN: already set on the profile page, so the area asks for it', await has(page, 'Enter your PIN'));
   await digits('1234');
-  check('PIN: the sign-up PIN opens the dashboard', await has(page, 'Progress report'));
+  check('PIN: the profile-page PIN opens the dashboard', await has(page, 'Progress report'));
   check('Parent: progress report lists the three subjects', (await has(page, 'English — Year 2')) && (await has(page, 'Maths — Year 2')) && (await has(page, 'Science — Year 2')));
   await shot(page, 'f05-parent');
   await tap(page, 'Home'); await tap(page, 'Parent'); await sl(400);
