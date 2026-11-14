@@ -9,6 +9,7 @@ import { SvgXml } from 'react-native-svg';
 import { badgeSvg } from '../logo';
 import { Avatar, Creator, Library } from '../components/Characters';
 import { findChar } from '../data/characters';
+import PinPad from '../components/PinPad';
 
 export default function Welcome() {
   const p = usePalette();
@@ -19,14 +20,27 @@ export default function Welcome() {
   const [name, setName] = useState('');
   const [chosen, setChosen] = useState(buddyId || 'fox');
   const [more, setMore] = useState<null | 'pick' | 'make'>(null);
-  const [pin1, setPin1] = useState('');
-  const [pin2, setPin2] = useState('');
-  const [err, setErr] = useState('');
   const cur = findChar(chosen, custom) ?? findChar('fox', custom)!;
   const me = { id: cur.id, e: cur.e, bg: cur.bg ?? null };
   const favList = favs.map((id) => findChar(id, custom)).filter((x): x is NonNullable<typeof x> => !!x);
   const [year, setYear] = useState(lastYear || 2);
   const [focus, setFocus] = useState(false);
+
+  // first launch: a grown-up creates the PIN before anything else
+  if (!pin) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: p.bg }}>
+        <ScrollView contentContainerStyle={{ width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 16, paddingBottom: 32, alignItems: 'center' }}>
+          <SvgXml xml={badgeSvg()} width={120} height={120} style={{ marginTop: 24 }} />
+          <T w={800} size={26} style={{ textAlign: 'center', marginTop: 10 }}>Welcome, grown-up! 👋</T>
+          <T w={700} size={14.5} color={p.muted} style={{ textAlign: 'center', marginTop: 6, paddingHorizontal: 10 }}>
+            Step 1 of 2 — create a PIN. It keeps the Grown-ups area, Change player and Reset for you. Then your child can pick a buddy and start.
+          </T>
+          <PinPad onUnlocked={() => {}} intro="Choose 4 numbers and remember them — you will type them twice." />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: p.bg }}>
@@ -161,38 +175,10 @@ export default function Welcome() {
               })}
             </View>
 
-            {!pin ? (
-              <View style={{ marginTop: 16 }}>
-                <T w={800} size={15} style={{ marginBottom: 4 }}>🔒 Grown-ups’ PIN</T>
-                <T w={600} size={12.5} color={p.muted} style={{ marginBottom: 8 }}>A parent chooses 4 numbers. It protects the Grown-ups area.</T>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  {[['Choose PIN', pin1, setPin1], ['Repeat PIN', pin2, setPin2]].map(([ph, v, set]: any) => (
-                    <TextInput
-                      key={ph}
-                      value={v}
-                      onChangeText={(x: string) => { set(x.replace(/\D/g, '').slice(0, 4)); setErr(''); }}
-                      placeholder={ph}
-                      placeholderTextColor={p.muted}
-                      keyboardType="number-pad"
-                      secureTextEntry
-                      maxLength={4}
-                      accessibilityLabel={ph}
-                      style={[{ flex: 1, fontSize: 17, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, borderWidth: 2, borderColor: p.line, backgroundColor: p.bg, color: p.ink, fontFamily: FONT.regular }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]}
-                    />
-                  ))}
-                </View>
-                {err ? <T w={700} size={13} color={p.dangerText} style={{ marginTop: 6 }}>{err}</T> : null}
-              </View>
-            ) : null}
-
             <Press
               onPress={() => {
                 const n = name.replace(/\s+/g, ' ').trim();
-                if (!pin) {
-                  if (pin1.length !== 4) { setErr('Please choose a 4-number PIN.'); return; }
-                  if (pin1 !== pin2) { setErr('The two PINs do not match.'); return; }
-                }
-                enter(n || 'Guest Explorer', me, year, 'home', pin ? undefined : pin1);
+                enter(n || 'Guest Explorer', me, year);
               }}
               style={[{ marginTop: 20, backgroundColor: p.sky, borderRadius: 16, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16 }, shadow]}
             >

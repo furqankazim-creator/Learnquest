@@ -5,6 +5,7 @@ import { Press, T, useCardShadow } from '../components/UI';
 import { useApp } from '../state';
 import { Sound } from '../sound';
 import { Avatar, Creator, Library } from '../components/Characters';
+import PinPad from '../components/PinPad';
 import { MAX_FAVS, findChar } from '../data/characters';
 
 const THEMES: { k: ThemePref; ico: string; label: string; sub: string }[] = [
@@ -20,6 +21,7 @@ export default function Settings() {
   const { name, buddy, buddyBg, year, soundOn, toggleSound, changePlayer, setSettingsOpen, favs, custom, addFav, removeFav, createCustom, deleteCustom } = useApp();
   const [lib, setLib] = useState<null | 'manage' | 'make'>(null);
   const [full, setFull] = useState(false);
+  const [askPin, setAskPin] = useState(false);
   const card = { backgroundColor: p.card, borderRadius: 20, padding: 18, marginBottom: 12 } as const;
 
   return (
@@ -79,7 +81,7 @@ export default function Settings() {
             <T w={700} size={13.5} color={p.muted}>Year {year} • {AGES[year]}</T>
           </View>
         </View>
-        <Press onPress={() => { setSettingsOpen(false); changePlayer(); }} style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
+        <Press onPress={() => setAskPin(true)} style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
           <T w={800} size={16}>{buddy} Change player, buddy or year</T>
         </Press>
       </View>
@@ -101,6 +103,17 @@ export default function Settings() {
           <T w={800} size={16}>🎨 Make my own character</T>
         </Press>
       </View>
+
+      <Modal visible={askPin} transparent animationType="fade" onRequestClose={() => setAskPin(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 12 }}>
+          <View style={{ width: '100%', maxWidth: 400, backgroundColor: p.card, borderRadius: 22, padding: 16, paddingBottom: 20 }}>
+            <PinPad onUnlocked={() => { setAskPin(false); setSettingsOpen(false); changePlayer(); }} />
+            <Press onPress={() => setAskPin(false)} style={{ alignSelf: 'center', padding: 10 }}>
+              <T w={700} size={14} color={p.muted}>Cancel</T>
+            </Press>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={lib !== null} transparent animationType="fade" onRequestClose={() => setLib(null)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 12 }}>
