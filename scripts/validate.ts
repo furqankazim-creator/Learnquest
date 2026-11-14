@@ -4,6 +4,7 @@ import { genMaths, wrongNums } from '../src/data/mathsGen';
 import { genMaths2 } from '../src/data/mathsGen2';
 import { ENG_Y, SCI_Y } from '../src/data/pack2';
 import { FIX } from '../src/data/fixes';
+import { EX_E, EX_S } from '../src/data/examples';
 
 let bad = 0, total = 0;
 const chk = (q: any[], tag: string) => {
@@ -43,6 +44,10 @@ for (let y = 1; y <= 6; y++) {
 for (const a of [0, 1, 3, 8, 12, 25, 99, 144, 365, 1000, 2250, 4326]) for (let n = 0; n < 200; n++) {
   const w = wrongNums(a);
   if (w.length !== 3 || new Set([a, ...w]).size !== 4 || w.some((x) => x < 0)) { bad++; console.log('WRONGNUMS', a, w); break; }
+}
+for (let y = 1; y <= 6; y++) for (const [tag, ex] of [['E', EX_E[y]], ['S', EX_S[y]]] as [string, string[]][]) {
+  if (!ex || ex.length !== 36) { bad++; console.log('EXAMPLE COUNT', tag + y, ex?.length); continue; }
+  ex.forEach((t, i) => { if (!t || t.length < 25 || /undefined|NaN/.test(t)) { bad++; console.log('EXAMPLE BAD', tag + y + '.' + i, t); } });
 }
 let passages = 0; for (const arr of Object.values(pools)) arr.forEach((q) => { if (q[7]) passages++; });
 console.log('reading-passage questions:', passages);

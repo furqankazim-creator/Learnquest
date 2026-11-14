@@ -7,6 +7,7 @@ import { genMaths, wrongNums } from './data/mathsGen';
 import { genMaths2 } from './data/mathsGen2';
 import { ENG_Y, SCI_Y } from './data/pack2';
 import { FIX } from './data/fixes';
+import { EX_E, EX_S } from './data/examples';
 import { STATE_KEY, dayKey, loadJSON, saveJSON, yesterdayKey } from './storage';
 
 export const STICKERS = ['🌟', '🦁', '🚀', '🌈', '🐢', '🍎', '🔭', '🏅', '🦋', '🎨', '🧲', '🌻'];
@@ -31,7 +32,7 @@ export function poolFor(subj: Subj, year: number): RawQ[] {
   });
 }
 
-export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string };
+export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string };
 
 // what the voice reads aloud: the passage (if any) and then the question
 export const spoken = (q: Q) => (q.p ? `${q.p} ${q.q}` : q.q);
@@ -44,17 +45,19 @@ export function shuffle<T>(arr: T[]): T[] {
   }
   return a;
 }
-function toQ(raw: RawQ, subj: Subj, idx: number): Q {
-  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6], p: raw[7] };
+function toQ(raw: RawQ, subj: Subj, idx: number, year: number): Q {
+  // English and Science carry a hand-written real-life example; Maths builds its own from the picture
+  const ex = subj === 'E' ? EX_E[year]?.[idx] : subj === 'S' ? EX_S[year]?.[idx] : undefined;
+  return { q: raw[0], a: raw[1], opts: shuffle([raw[1], raw[2], raw[3], raw[4]]), e: raw[5], subj, idx, x: raw[6], p: raw[7], ex };
 }
 // noPassage: Match It cannot show a reading passage, so it only uses stand-alone questions
 export function questionsFor(subj: Subj, year: number, count: number, noPassage = false): Q[] {
-  const all = poolFor(subj, year).map((r, i) => toQ(r, subj, i)).filter((q) => !noPassage || !q.p);
+  const all = poolFor(subj, year).map((r, i) => toQ(r, subj, i, year)).filter((q) => !noPassage || !q.p);
   return shuffle(all).slice(0, count);
 }
 export function mixedQuestions(year: number, count: number, noPassage = false): Q[] {
   const all: Q[] = [];
-  (['E', 'M', 'S'] as Subj[]).forEach((s) => poolFor(s, year).forEach((r, i) => all.push(toQ(r, s, i))));
+  (['E', 'M', 'S'] as Subj[]).forEach((s) => poolFor(s, year).forEach((r, i) => all.push(toQ(r, s, i, year))));
   return shuffle(noPassage ? all.filter((q) => !q.p) : all).slice(0, count);
 }
 

@@ -26,7 +26,7 @@ function QuestionCard({ q, extra, help, onHelp }: { q: Q; extra?: string; help: 
   const al = wide ? 'flex-start' : 'center';
   // Maths questions get a picture of the actual problem (blocks, groups, number line, clock…)
   const viz = q.subj === 'M' ? parseViz(q.q, q.e) : null;
-  const example = viz ? exampleText(viz, q.q) : null;
+  const example = viz ? exampleText(viz, q.q) : q.ex ?? null;
   return (
     <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: 22, paddingHorizontal: wide ? 32 : 18, alignItems: 'center', flexDirection: wide ? 'row' : 'column', gap: wide ? 36 : 0 }, shadow]}>
       {viz ? (
