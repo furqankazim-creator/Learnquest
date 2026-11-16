@@ -9,9 +9,11 @@ import { Sound } from '../sound';
 import Parent from './Parent';
 import Settings from './Settings';
 import { useLayout } from '../layout';
-import AppIcon, { GAME_ICON, SUBJECT_ICON } from '../components/Icons';
+import AppIcon, { GAME_ICON, SUBJECT_ICON, TAB_ICON } from '../components/Icons';
 import { SvgXml } from 'react-native-svg';
 import { badgeSvg } from '../logo';
+import HopeBridgePromo from './HopeBridgePromo';
+import { HOPE_BRIDGE_URL } from '../data/hopeBridge';
 
 const SUBJ_KEYS: Subj[] = ['E', 'M', 'S'];
 
@@ -49,7 +51,7 @@ function SecTitle({ children }: { children: React.ReactNode }) {
   return <T w={800} size={20} style={{ marginTop: 22, marginBottom: 12 }}>{children}</T>;
 }
 
-function Home() {
+function Home({ onOpenBloomLearn, onOpenPublisher }: { onOpenBloomLearn: () => void; onOpenPublisher: () => void }) {
   const p = usePalette();
   const { wide } = useLayout();
   const shadow = useCardShadow();
@@ -101,6 +103,64 @@ function Home() {
       <T w={700} size={14} color={p.muted}>
         Questions get harder every year — Year 1 starts with sounds and counting, Year 6 reaches fractions, ratio, algebra, evolution and the heart.
       </T>
+
+      <View style={[{ backgroundColor: '#3B2F6B', borderRadius: 24, padding: 16, marginTop: 18, marginBottom: 12 }, shadow]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#4B57D6', alignItems: 'center', justifyContent: 'center' }}>
+            <T size={28}>🌱</T>
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <T w={800} size={20} color="#fff">BloomLearn</T>
+              <View style={{ backgroundColor: '#D9F3E6', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
+                <T w={700} size={11} color="#1B7F4A">AI</T>
+              </View>
+            </View>
+            <T w={700} size={13} color="#D9D6F5">Say it. See it. Learn it.</T>
+          </View>
+        </View>
+        <T w={600} size={13.5} color="#E6E1FF" style={{ marginTop: 10, lineHeight: 20 }}>
+          Speak or type a sentence and turn it into a visual learning scene with interactive videos, maths, and science practice.
+        </T>
+        <Press
+          onPress={() => {
+            Sound.tap();
+            onOpenBloomLearn();
+          }}
+          style={{ marginTop: 14, backgroundColor: '#4B57D6', borderRadius: 16, minHeight: 52, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <T w={800} size={16} color="#fff">Meet BloomLearn ›</T>
+        </Press>
+      </View>
+
+      <View style={[{ backgroundColor: '#D8B36C', borderRadius: 24, padding: 16, marginBottom: 12 }, shadow]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#F6C866', alignItems: 'center', justifyContent: 'center' }}>
+            <T size={28}>🌉</T>
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <T w={800} size={20} color="#2D2A4A">Hope Bridge Digital</T>
+              <View style={{ backgroundColor: '#FFF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
+                <T w={700} size={10.5} color="#9D6A00">Publisher</T>
+              </View>
+            </View>
+            <T w={600} size={13.5} color="#3B2F2A">Calm, Family-First Apps for Autism, Speech & Attention Needs</T>
+          </View>
+        </View>
+        <T w={600} size={13.5} color="#473522" style={{ marginTop: 10, lineHeight: 20 }}>
+          Makers of Angel Artic, Angel Talk, BloomLearn, Bloom Focus & Nexia Bridge. Calm, family-first apps for autism, speech, and attention needs.
+        </T>
+        <Press
+          onPress={() => {
+            Sound.tap();
+            onOpenPublisher();
+          }}
+          style={{ marginTop: 14, backgroundColor: '#F1655B', borderRadius: 16, minHeight: 52, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <T w={800} size={16} color="#fff">Explore Our Apps & Mission ›</T>
+        </Press>
+      </View>
     </View>
   );
 }
@@ -361,13 +421,14 @@ function TabBar() {
     { t: 'home', label: 'Home' },
     { t: 'games', label: 'Games' },
     { t: 'rewards', label: 'Rewards' },
+    { t: 'discover', label: 'Discover' },
     { t: 'parent', label: 'Parent' },
   ];
   return (
     <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 10) + 8, pointerEvents: 'box-none' }}>
       <View
         style={[{
-          flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 360, backgroundColor: p.card, borderRadius: 28,
+          flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 420, backgroundColor: p.card, borderRadius: 28,
           paddingVertical: 8, paddingHorizontal: 8, gap: 6, borderWidth: 1, borderColor: p.line,
         }, shadow]}
       >
@@ -385,7 +446,7 @@ function TabBar() {
                 backgroundColor: on ? p.violetSoft : 'transparent', borderWidth: on ? 1.5 : 0, borderColor: on ? p.violet : 'transparent',
               }}
             >
-              <AppIcon name={x.t} size={28} />
+              <AppIcon name={TAB_ICON[x.t]} size={28} />
               <T w={800} size={11} color={on ? p.violet : p.muted} numberOfLines={1}>{x.label}</T>
             </Press>
           );
@@ -402,6 +463,7 @@ function Sidebar() {
     { t: 'home', ico: '🏠', label: 'Home' },
     { t: 'games', ico: '🎮', label: 'Games' },
     { t: 'rewards', ico: '🏆', label: 'Rewards' },
+    { t: 'discover', ico: '🌉', label: 'Discover' },
     { t: 'parent', ico: '👨‍👩‍👧', label: 'Parent' },
   ];
   return (
@@ -430,8 +492,11 @@ function Sidebar() {
 
 export default function Shell() {
   const p = usePalette();
-  const { tab, settingsOpen } = useApp();
+  const { tab, settingsOpen, setTab } = useApp();
   const { wide, contentMax } = useLayout();
+  const [discoverView, setDiscoverView] = React.useState<'portfolio' | 'bloom'>('portfolio');
+  const openBloomLearn = () => { setDiscoverView('bloom'); setTab('discover'); };
+  const openPublisher = () => { setDiscoverView('portfolio'); setTab('discover'); };
   const narrowCol = wide && (settingsOpen || tab === 'parent') ? { maxWidth: 760, alignSelf: 'center', width: '100%' } as const : undefined;
   const content = (
     <ScrollView
@@ -443,9 +508,10 @@ export default function Shell() {
       <View style={narrowCol}>
         {settingsOpen ? <Settings /> : (
           <>
-            {tab === 'home' && <Home />}
+            {tab === 'home' && <Home onOpenBloomLearn={openBloomLearn} onOpenPublisher={openPublisher} />}
             {tab === 'games' && <Games />}
             {tab === 'rewards' && <Rewards />}
+            {tab === 'discover' && <HopeBridgePromo view={discoverView} />}
             {tab === 'parent' && <Parent />}
           </>
         )}

@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Image, ImageSourcePropType, KeyboardAvoidingView, Modal, Platform, ScrollView, TextInput, View } from 'react-native';
+import { Image, ImageSourcePropType, KeyboardAvoidingView, Linking, Modal, Platform, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AGES, ThemeCtx, ThemePref, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
@@ -9,6 +9,7 @@ import { Avatar, Creator, Library } from '../components/Characters';
 import PinPad from '../components/PinPad';
 import { MAX_FAVS, findChar } from '../data/characters';
 import { APP_NAME, PRIVACY_LAST_UPDATED, PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '../appInfo';
+import { HOPE_BRIDGE_EMAIL, HOPE_BRIDGE_URL } from '../data/hopeBridge';
 import type { Subj } from '../theme';
 
 const THEMES: { k: ThemePref; ico: string; label: string; sub: string }[] = [
@@ -203,7 +204,13 @@ export default function Settings() {
           {APP_NAME} for Years 1–6 (ages 5–11). No ads, no chat, no timers and no fail screens. Only a first name is used. Progress is saved on this device only.
         </T>
         <T w={700} size={13.5} style={{ marginTop: 10 }}>Support: {SUPPORT_EMAIL}</T>
-        <T w={600} size={12.5} color={p.muted} style={{ marginTop: 6, lineHeight: 18 }}>
+        <Press onPress={() => Linking.openURL(HOPE_BRIDGE_URL)} style={{ marginTop: 12, backgroundColor: p.violetSoft, borderRadius: 12, paddingVertical: 10, alignItems: 'center' }}>
+          <T w={800} size={14}>🌟 About Hope Bridge Digital</T>
+        </Press>
+        <Press onPress={() => Linking.openURL(`mailto:${HOPE_BRIDGE_EMAIL}`)} style={{ marginTop: 8, backgroundColor: p.card, borderRadius: 12, borderWidth: 1, borderColor: p.line, paddingVertical: 10, alignItems: 'center' }}>
+          <T w={800} size={14}>{HOPE_BRIDGE_EMAIL}</T>
+        </Press>
+        <T w={600} size={12.5} color={p.muted} style={{ marginTop: 8, lineHeight: 18 }}>
           Before release, replace placeholder values in `src/appInfo.ts`, `app.json` (bundle/package ID), and host `docs/PRIVACY_POLICY.md` at a public URL.
         </T>
       </View>
@@ -292,6 +299,9 @@ export default function Settings() {
                     </View>
                   </View>
                   <T w={600} size={13} color={p.muted} style={{ marginBottom: 10 }}>Optional image</T>
+                  <T w={700} size={12.5} color={p.muted} style={{ marginBottom: 10, lineHeight: 18 }}>
+                    This question will be reused across game types such as Match It, Quick Quiz and Balloon Pop.
+                  </T>
                   <T w={700} size={14} style={{ marginBottom: 4 }}>Answer (correct)</T>
                   <TextInput
                     value={cqA}

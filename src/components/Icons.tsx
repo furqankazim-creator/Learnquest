@@ -4,7 +4,7 @@ import { FONT } from '../theme';
 
 export type IconName =
   | 'balloon' | 'rescue' | 'match' | 'quick' | 'mission'
-  | 'home' | 'games' | 'rewards' | 'parent'
+  | 'home' | 'games' | 'rewards' | 'discover' | 'parent'
   | 'english' | 'maths' | 'science' | 'mixed';
 
 const grad = (id: string, a: string, b: string) => (
@@ -127,6 +127,17 @@ function Art({ name }: { name: IconName }) {
           <Circle cx={19} cy={17} r={1.2} fill="#2D2A4A" /><Circle cx={25} cy={17} r={1.2} fill="#2D2A4A" />
         </G>
       );
+    case 'discover':
+      return (
+        <G>
+          <Defs>{grad('dR', '#FF6B9D', '#C3185D')}{grad('dB', '#7C4DFF', '#4527A0')}</Defs>
+          <Path d="M32 4 L38 22 L56 22 L42 34 L46 52 L32 42 L18 52 L22 34 L8 22 L26 22 Z" fill="url(#dB)" stroke="#311B92" strokeWidth={1.5} strokeLinejoin="round" />
+          <Path d="M32 10 L36 22 L48 22 L38 30 L42 42 L32 35 L22 42 L26 30 L16 22 L28 22 Z" fill="url(#dR)" />
+          <Circle cx={32} cy={24} r={5} fill="#fff" fillOpacity={0.9} />
+          <Circle cx={32} cy={24} r={2.5} fill="#FF6B9D" />
+          <Circle cx={14} cy={12} r={2.5} fill="#FFE27A" /><Circle cx={52} cy={10} r={2} fill="#FFE27A" /><Circle cx={50} cy={50} r={1.8} fill="#FFE27A" />
+        </G>
+      );
     case 'english':
       return (
         <G>
@@ -183,3 +194,11 @@ export default function AppIcon({ name, size = 48 }: { name: IconName; size?: nu
 
 export const GAME_ICON: Record<string, IconName> = { balloon: 'balloon', rescue: 'rescue', match: 'match', quiz: 'quick', mission: 'mission' };
 export const SUBJECT_ICON: Record<string, IconName> = { E: 'english', M: 'maths', S: 'science' };
+
+export const TAB_ICON: Record<string, IconName> = {
+  home: 'home',
+  games: 'games',
+  rewards: 'rewards',
+  discover: 'discover',
+  parent: 'parent',
+};

@@ -81,6 +81,17 @@ function customToQ(c: CustomQuestion, idx: number): Q {
   const oe = emojiForOptions(opts) ?? undefined;
   return { q: c.q, a: c.a, opts, e: '✨', subj: c.subj, idx, x: c.note, oe, imageUri: c.imageUri, custom: true, customId: c.id };
 }
+function customVariantsForPlay(c: CustomQuestion, baseIdx: number, count: number): Q[] {
+  const pool: Q[] = [];
+  const variants = Math.max(2, Math.ceil(count / Math.max(1, Math.min(4, count))));
+  for (let v = 0; v < variants; v++) {
+    const q = customToQ(c, baseIdx * 10 + v);
+    const shuffled = shuffle([q.a, ...[q.opts.filter((opt) => opt !== q.a)]]) as string[];
+    const fixed = { ...q, opts: shuffled };
+    pool.push(fixed);
+  }
+  return pool;
+}
 export function questionsFor(subj: Subj, year: number, count: number, noPassage = false): Q[] {
   const all = poolFor(subj, year).map((r, i) => toQ(r, subj, i, year)).filter((q) => !noPassage || !q.p);
   return shuffle(all).slice(0, count);
@@ -93,7 +104,7 @@ export function mixedQuestions(year: number, count: number, noPassage = false): 
 
 export type GameSubj = Subj | 'X' | 'C';
 export type GameKind = 'balloon' | 'rescue' | 'match' | 'quiz' | 'mission';
-export type Tab = 'home' | 'games' | 'rewards' | 'parent';
+export type Tab = 'home' | 'games' | 'rewards' | 'discover' | 'parent';
 
 type Right = Record<Subj, Record<number, boolean>>;
 const emptyRight = (): Right => ({ E: {}, M: {}, S: {} });
@@ -277,7 +288,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const questionsForPlay = useCallback((subj: GameSubj, count: number, noPassage = false): Q[] => {
     if (subj === 'C') {
-      const all = customQuestions.map((c, i) => customToQ(c, i));
+      const all = customQuestions.flatMap((c, i) => customVariantsForPlay(c, i, count));
       return shuffle(all).slice(0, count);
     }
     if (subj === 'X') return mixedQuestions(year, count, noPassage);

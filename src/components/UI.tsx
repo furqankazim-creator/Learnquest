@@ -3,13 +3,13 @@ import { Platform, Pressable, Text as RNText, TextProps, TextStyle, View, ViewSt
 import { FONT, usePalette } from '../theme';
 
 // Text with the app font. weight >= 700 uses the bold face.
-export function T({ style, w = 400, size = 16, color, ...rest }: TextProps & { w?: number; size?: number; color?: string }) {
+export function T({ style, w = 400, size = 18, color, ...rest }: TextProps & { w?: number; size?: number; color?: string }) {
   const p = usePalette();
   return (
     <RNText
       {...rest}
       style={[
-        { fontFamily: w >= 700 ? FONT.bold : FONT.regular, fontSize: size, color: color ?? p.ink },
+        { fontFamily: w >= 700 ? FONT.bold : FONT.regular, fontSize: size, color: color ?? p.ink, lineHeight: size + 6 },
         Platform.OS === 'web' ? ({ fontWeight: String(w) } as TextStyle) : null,
         style,
       ]}
