@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 import { Avatar } from '../components/Characters';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AGES, SUBJECTS, Subj, usePalette } from '../theme';
@@ -187,7 +187,8 @@ function Rewards() {
   const p = usePalette();
   const { wide } = useLayout();
   const shadow = useCardShadow();
-  const { name, buddy, buddyBg, year, stars, coins, answered, correct, stickers, streak, right } = useApp();
+  const card = { backgroundColor: p.card, borderRadius: 20, padding: 16, marginBottom: 12 } as const;
+  const { name, buddy, buddyBg, year, stars, coins, answered, correct, stickers, streak, right, setTab } = useApp();
   const pct = answered ? Math.round((correct / answered) * 100) : 0;
   const nextSticker = STICKERS.findIndex((_, i) => !stickers.includes(i));
   const stickerCount = stickers.length;
@@ -337,6 +338,16 @@ function Rewards() {
         })}
       </View>
       <T w={700} size={14} color={p.muted} style={{ marginTop: 12, marginBottom: 8 }}>Stars and coins always grow, never shrink. Stickers stay on your wall forever. Every question you try helps you learn!</T>
+
+      <View style={[card, shadow, { marginTop: 14 }]}>
+        <T w={700} size={17} style={{ marginBottom: 8 }}>🎁 Grown-ups: Make custom questions</T>
+        <T w={600} size={13.5} color={p.muted} style={{ lineHeight: 21, marginBottom: 10 }}>
+          Create your own spelling, maths or science questions with pictures. Child plays them in Games → My Qs, and you can see their answers in Settings → My Questions → Answer log.
+        </T>
+        <Press onPress={() => setTab('parent')} style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 52, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
+          <T w={800} size={16}>Open Grown-ups Area</T>
+        </Press>
+      </View>
     </View>
   );
 }

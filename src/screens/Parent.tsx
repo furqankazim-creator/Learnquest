@@ -4,6 +4,7 @@ import { SUBJECTS, Subj, usePalette } from '../theme';
 import { Press, ProgressBar, T, useCardShadow } from '../components/UI';
 import { POOL_SIZE, useApp } from '../state';
 import PinPad from '../components/PinPad';
+import { Sound } from '../sound';
 
 const SUBJ_KEYS: Subj[] = ['E', 'M', 'S'];
 
@@ -15,8 +16,7 @@ function PinGate() {
 function Dashboard() {
   const p = usePalette();
   const shadow = useCardShadow();
-  const { name, year, right, answered, soundOn, toggleSound, changePlayer, reset, resetNote, setPin, setParentOpen } = useApp();
-  const { customQuestions } = useApp() as any;
+  const { name, year, right, answered, soundOn, toggleSound, changePlayer, reset, resetNote, setPin, setParentOpen, setSettingsOpen, customQuestions } = useApp();
 
   const pending: Subj[] = [];
   const counts: Record<Subj, number> = { E: 0, M: 0, S: 0 };
@@ -57,19 +57,22 @@ function Dashboard() {
         );
       })}
 
-      {customQuestions.length > 0 ? (
-        <View style={[card, shadow]}>
-          <T w={700} size={17} style={{ marginBottom: 8 }}>📝 My Questions</T>
-          <T w={600} size={14} color={p.muted} style={{ lineHeight: 21, marginBottom: 10 }}>
-            {customQuestions.length} custom question{customQuestions.length === 1 ? '' : 's'} created. Child plays them in Games → My Qs.
-          </T>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            <Press onPress={() => setParentOpen(false)} style={{ flex: 1, backgroundColor: p.violetSoft, borderRadius: 14, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' }}>
-              <T w={800} size={14}>Manage in Settings</T>
-            </Press>
-          </View>
+      <View style={[card, shadow]}>
+        <T w={700} size={17} style={{ marginBottom: 8 }}>📝 My Questions (custom)</T>
+        <T w={600} size={14} color={p.muted} style={{ lineHeight: 21, marginBottom: 10 }}>
+          {customQuestions.length > 0
+            ? `${customQuestions.length} custom question${customQuestions.length === 1 ? '' : 's'} created. Your child plays them in Games → My Qs.`
+            : 'Add your own custom spelling, maths, or quiz questions for your child to practise.'}
+        </T>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          <Press
+            onPress={() => { Sound.tap(); setParentOpen(false); setSettingsOpen(true); }}
+            style={{ flex: 1, backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <T w={800} size={14}>{customQuestions.length > 0 ? 'Manage in Settings' : '+ Add in Settings'}</T>
+          </Press>
         </View>
-      ) : null}
+      </View>
 
       <View style={[card, shadow]}>
         <T w={700} size={17} style={{ marginBottom: 8 }}>⚙️ Settings</T>

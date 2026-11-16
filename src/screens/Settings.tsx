@@ -1,16 +1,15 @@
 import React, { useContext, useState } from 'react';
-import { Image, ImageSourcePropType, Modal, ScrollView, TextInput, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Image, ImageSourcePropType, KeyboardAvoidingView, Modal, Platform, ScrollView, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AGES, ThemeCtx, ThemePref, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
-import { useApp } from '../state';
+import { CustomQuestion, useApp } from '../state';
 import { Sound } from '../sound';
 import { Avatar, Creator, Library } from '../components/Characters';
 import PinPad from '../components/PinPad';
 import { MAX_FAVS, findChar } from '../data/characters';
 import { APP_NAME, PRIVACY_LAST_UPDATED, PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '../appInfo';
 import type { Subj } from '../theme';
-import type { CustomQuestion } from '../state';
 
 const THEMES: { k: ThemePref; ico: string; label: string; sub: string }[] = [
   { k: 'light', ico: '☀️', label: 'Light', sub: 'Bright cream' },
@@ -25,11 +24,15 @@ export default function Settings() {
   const p = usePalette();
   const shadow = useCardShadow();
   const { pref, setPref } = useContext(ThemeCtx);
-  const { name, buddy, buddyBg, year, soundOn, toggleSound, setSettingsOpen, favs, custom, addFav, removeFav, createCustom, deleteCustom } = useApp();
-  const { customQuestions, addCustomQuestion, deleteCustomQuestion, customLogs } = useApp() as any;
+  const {
+    name, buddy, buddyBg, year, soundOn, toggleSound, setSettingsOpen, favs, custom, addFav, removeFav, createCustom, deleteCustom,
+    customQuestions, addCustomQuestion, deleteCustomQuestion, clearCustomLogs, customLogs,
+  } = useApp();
   const [lib, setLib] = useState<null | 'manage' | 'make'>(null);
   const [full, setFull] = useState(false);
   const [askPin, setAskPin] = useState(false);
+  const [pendingStudio, setPendingStudio] = useState<null | 'create' | 'list' | 'logs'>(null);
+  const [authed, setAuthed] = useState(false);
   const [studio, setStudio] = useState<'closed' | 'create' | 'list' | 'logs'>('closed');
   const [imgUri, setImgUri] = useState<string | null>(null);
   const [cqSubj, setCqSubj] = useState<Subj | null>(null);
@@ -38,16 +41,32 @@ export default function Settings() {
   const [cqW1, setCqW1] = useState('');
   const [cqW2, setCqW2] = useState('');
   const [cqW3, setCqW3] = useState('');
+  const [formErr, setFormErr] = useState<string | null>(null);
   const card = { backgroundColor: p.card, borderRadius: 20, padding: 16, marginBottom: 10 } as const;
 
   const openStudio = (view: 'create' | 'list' | 'logs') => {
-    if (!askPin) { setAskPin(true); return; }
+    setFormErr(null);
+    if (!authed) {
+      setPendingStudio(view);
+      setAskPin(true);
+      return;
+    }
     setStudio(view);
   };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-    if (!result.canceled && result.assets?.[0]?.uri) setImgUri(result.assets[0].uri);
+    try {
+      const ImagePicker = await import('expo-image-picker');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets?.[0]?.uri) setImgUri(result.assets[0].uri);
+    } catch {
+      // image picker unavailable
+    }
   };
 
   const subjPress = (s: Subj) => {
@@ -189,12 +208,19 @@ export default function Settings() {
         </T>
       </View>
 
-      <Modal visible={askPin} transparent animationType="fade" onRequestClose={() => setAskPin(false)}>
+      <Modal visible={askPin} transparent animationType="fade" onRequestClose={() => { setAskPin(false); setPendingStudio(null); }}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 12 }}>
           <View style={{ width: '100%', maxWidth: 400, backgroundColor: p.card, borderRadius: 22, padding: 16, paddingBottom: 20 }}>
             <T w={800} size={17} style={{ marginBottom: 10 }}>Grown-ups PIN</T>
-            <PinPad onUnlocked={() => { setAskPin(false); }} />
-            <Press onPress={() => setAskPin(false)} style={{ alignSelf: 'center', padding: 10 }}>
+            <PinPad onUnlocked={() => {
+              setAskPin(false);
+              setAuthed(true);
+              if (pendingStudio) {
+                setStudio(pendingStudio);
+                setPendingStudio(null);
+              }
+            }} />
+            <Press onPress={() => { setAskPin(false); setPendingStudio(null); }} style={{ alignSelf: 'center', padding: 10 }}>
               <T w={700} size={14} color={p.muted}>Cancel</T>
             </Press>
           </View>
@@ -300,7 +326,7 @@ export default function Settings() {
                   />
                   <Press onPress={() => {
                     if (!cqSubj) return;
-                    const ok = addCustomQuestion({ subj: cqSubj, q: cqQ, a: cqA, wrong1: cqW1, wrong2: cqW2, wrong3: cqW3, imageUri: imgUri });
+                    const ok = addCustomQuestion({ subj: cqSubj, q: cqQ, a: cqA, wrong1: cqW1, wrong2: cqW2, wrong3: cqW3, imageUri: imgUri ?? undefined });
                     if (ok) {
                       setCqSubj(null); setCqQ(''); setCqA(''); setCqW1(''); setCqW2(''); setCqW3(''); setImgUri(null);
                       setStudio('list');
