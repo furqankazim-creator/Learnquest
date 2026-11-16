@@ -118,7 +118,13 @@ const gens: Record<number, (() => RawQ)[]> = {
     () => { const a = rnd(35, 80), b = rnd(35, 80); const c = 180 - a - b; return c > 5 ? num(`In a triangle two angles are ${a}° and ${b}°. The third angle is…`, c, '📐', 'Angles in a triangle add to 180°.', [10, 5, 20]) : num('Angles on a straight line add up to…', 180, '📐', 'A straight line is 180°.', [10, 90, 20]); },
     () => { const a = rnd(3, 9) * 2, b = rnd(3, 9) * 2, c = rnd(3, 9) * 2, d = rnd(3, 9) * 2; const m = (a + b + c + d) / 4; return Number.isInteger(m) ? num(`The mean of ${a}, ${b}, ${c} and ${d} is…`, m, '📊', 'Sum ÷ number of values.') : num(`The mean of ${a}, ${a}, ${a + 4} and ${a + 4} is…`, a + 2, '📊', 'Sum ÷ 4.'); },
     () => { const b = rnd(3, 9) * 2, h = rnd(3, 9); return num(`A triangle has base ${b} cm and height ${h} cm. Its area is…`, (b * h) / 2, '🔺', `Area = ½ × base × height = ${(b * h) / 2} cm².`, [b, h, 5]); },
-    () => { const a = rnd(2, 4), b = rnd(2, 5); const n = rnd(2, 4); return txt(`${a}/${b * n} is the same as…`, `${a * 2}/${b * n * 2}`, [`${a + 2}/${b * n + 2}`, `${a}/${b * n * 2}`, `${a * 2}/${b * n}`], '🍕', 'Multiply the top and bottom by the same number.'); },
+    () => {
+      const a = rnd(2, 4);
+      let b = rnd(2, 4), n = rnd(2, 3);
+      while (b * n <= a) b++;
+      const den = b * n;
+      return txt(`${a}/${den} is the same as…`, `${a * 2}/${den * 2}`, [`${a + 2}/${den + 2}`, `${a}/${den * 2}`, `${a * 2}/${den}`], '🍕', 'Multiply the top and bottom by the same number.');
+    },
   ],
 };
 

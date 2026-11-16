@@ -49,7 +49,12 @@ export const gens2: Record<number, (() => RawQ)[]> = {
       ]);
       return txt(s.q, s.a, s.w, s.e, 'Think about the real size of each thing.');
     },
-    () => { const a = rnd(2, 9); return num(`A sweet costs ${a}p. You pay with a 10p coin. How much change do you get?`, 10 - a, '🪙', `10 − ${a} = ${10 - a}.`); },
+    () => {
+      const a = rnd(2, 9);
+      const ans = 10 - a;
+      const w = wrongNums(ans).map((x) => `${x}p`);
+      return txt(`A sweet costs ${a}p. You pay with a 10p coin. How much change do you get?`, `${ans}p`, w, '🪙', `10 − ${a} = ${ans}p.`);
+    },
     () => { const i = rnd(0, 5); const next = DAYS[i + 1]; return txt(`What day comes after ${DAYS[i]}?`, next, distinct(next, [DAYS[i], DAYS[(i + 2) % 7], DAYS[(i + 3) % 7]], () => DAYS[rnd(0, 6)]), '📅', `After ${DAYS[i]} comes ${next}.`); },
     () => { const s = pick([5, 10]); return num(`Count in ${s}s: ${s}, ${s * 2}, ${s * 3}, ?`, s * 4, '🖐️', `Add ${s} each time.`); },
     () => txt('Which shape has 4 equal sides and 4 corners?', 'square', ['triangle', 'circle', 'rectangle'], '🟦', 'A square has 4 sides that are all the same length.'),

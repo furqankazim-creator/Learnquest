@@ -27,8 +27,8 @@ export function poolFor(subj: Subj, year: number): RawQ[] {
   return raw.map((r, i) => {
     const fixed = FIX[`${subj}${year}.${i}`];
     if (fixed) return fixed;
-    // original Maths answers: swap the "±1, ±2" options for more believable slips
-    if (subj === 'M' && i < 12 && r.slice(1, 5).every((x) => /^\d+$/.test(x))) {
+    // original Maths answers: swap the "±1, ±2" options for more believable slips (skip conceptual/clock/prime questions)
+    if (subj === 'M' && i < 12 && r.slice(1, 5).every((x) => /^\d+$/.test(x)) && !r[0].includes('prime') && !r[0].includes('half an hour')) {
       const w = wrongNums(Number(r[1]));
       const note = r[6] ?? (r[0].includes('= ?') ? `${r[0].replace('?', r[1])}.` : undefined);
       return [r[0], r[1], String(w[0]), String(w[1]), String(w[2]), r[5], note as string] as RawQ;
@@ -37,7 +37,21 @@ export function poolFor(subj: Subj, year: number): RawQ[] {
   });
 }
 
-export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string; sv?: SciSpec; ev?: EngSpec; oe?: (string | undefined)[] };
+export type Q = { q: string; a: string; opts: string[]; e: string; subj: Subj; idx: number; x?: string; p?: string; ex?: string; sv?: SciSpec; ev?: EngSpec; oe?: (string | undefined)[]; imageUri?: string; custom?: boolean; customId?: string };
+
+export type CustomQuestion = {
+  id: string;
+  createdAt: number;
+  subj: Subj;
+  q: string;
+  a: string;
+  wrong1: string;
+  wrong2: string;
+  wrong3: string;
+  imageUri?: string;
+  note?: string;
+};
+export type CustomLog = { id: string; questionId: string; question: string; subj: Subj; correct: boolean; at: number };
 
 // what the voice reads aloud: the passage (if any) and then the question
 export const spoken = (q: Q) => (q.p ? `${q.p} ${q.q}` : q.q);
@@ -62,6 +76,11 @@ function toQ(raw: RawQ, subj: Subj, idx: number, year: number): Q {
   return { q: raw[0], a: raw[1], opts, e: PIC_FIX[`${subj}${year}.${idx}`] ?? raw[5], subj, idx, x: raw[6], p: raw[7], ex, sv, ev, oe };
 }
 // noPassage: Match It cannot show a reading passage, so it only uses stand-alone questions
+function customToQ(c: CustomQuestion, idx: number): Q {
+  const opts = shuffle([c.a, c.wrong1, c.wrong2, c.wrong3]);
+  const oe = emojiForOptions(opts) ?? undefined;
+  return { q: c.q, a: c.a, opts, e: '✨', subj: c.subj, idx, x: c.note, oe, imageUri: c.imageUri, custom: true, customId: c.id };
+}
 export function questionsFor(subj: Subj, year: number, count: number, noPassage = false): Q[] {
   const all = poolFor(subj, year).map((r, i) => toQ(r, subj, i, year)).filter((q) => !noPassage || !q.p);
   return shuffle(all).slice(0, count);
@@ -72,7 +91,7 @@ export function mixedQuestions(year: number, count: number, noPassage = false): 
   return shuffle(noPassage ? all.filter((q) => !q.p) : all).slice(0, count);
 }
 
-export type GameSubj = Subj | 'X';
+export type GameSubj = Subj | 'X' | 'C';
 export type GameKind = 'balloon' | 'rescue' | 'match' | 'quiz' | 'mission';
 export type Tab = 'home' | 'games' | 'rewards' | 'parent';
 
@@ -103,12 +122,19 @@ type Ctx = {
   ready: boolean;
   pin: string | null; setPin: (p: string | null) => void;
   streak: number;
+  customQuestions: CustomQuestion[];
+  customLogs: CustomLog[];
+  addCustomQuestion: (q: Omit<CustomQuestion, 'id' | 'createdAt'>) => boolean;
+  deleteCustomQuestion: (id: string) => void;
+  clearCustomLogs: () => void;
+  questionsForPlay: (subj: GameSubj, count: number, noPassage?: boolean) => Q[];
 };
 
 type Saved = {
   name: string; buddy: string; year: number; stars: number; coins: number; answered: number; correct: number;
   right: Right; stickers: number[]; soundOn: boolean; pin: string | null; streak: number; lastDay: string | null; profile: boolean;
   buddyId?: string; buddyBg?: string | null; favs?: string[]; custom?: Custom[];
+  customQuestions?: CustomQuestion[]; customLogs?: CustomLog[];
 };
 
 const C = createContext<Ctx>(null as any);
@@ -141,6 +167,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [pin, setPin] = useState<string | null>(null);
   const [streakCount, setStreakCount] = useState(0);
   const [lastDay, setLastDay] = useState<string | null>(null);
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
+  const [customLogs, setCustomLogs] = useState<CustomLog[]>([]);
   const [profile, setProfile] = useState(false);
 
   // load saved progress once, on start
@@ -160,6 +188,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setStickers(d.stickers || []);
         if (d.soundOn === false) { Sound.on = false; setSoundOn(false); }
         setPin(d.pin || null); setStreakCount(d.streak || 0); setLastDay(d.lastDay || null);
+        const cq = Array.isArray(d.customQuestions) ? d.customQuestions.filter((q) => q && q.id && q.q && q.a && q.wrong1 && q.wrong2 && q.wrong3) : [];
+        const cl = Array.isArray(d.customLogs) ? d.customLogs.filter((l) => l && l.id && l.questionId) : [];
+        setCustomQuestions(cq);
+        setCustomLogs(cl.slice(-100));
         setProfile(!!d.profile);
         if (d.profile) setScreen('app');
       }
@@ -172,11 +204,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!ready) return;
     const t = setTimeout(() => {
-      const data: Saved = { name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streak: streakCount, lastDay, profile, buddyId, buddyBg, favs, custom };
+      const data: Saved = { name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streak: streakCount, lastDay, profile, buddyId, buddyBg, favs, custom, customQuestions, customLogs };
       saveJSON(STATE_KEY, data);
     }, 250);
     return () => clearTimeout(t);
-  }, [ready, name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streakCount, lastDay, profile, buddyId, buddyBg, favs, custom]);
+  }, [ready, name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, pin, streakCount, lastDay, profile, buddyId, buddyBg, favs, custom, customQuestions, customLogs]);
 
   const toggleSound = useCallback(() => {
     const next = !Sound.on;
@@ -231,11 +263,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     Sound.stopSpeak(); setGame(null); setScreen('app');
   }, []);
 
+  const addCustomQuestion = useCallback((q: Omit<CustomQuestion, 'id' | 'createdAt'>) => {
+    const clean = (s?: string) => (s || '').replace(/\s+/g, ' ').trim();
+    const cq = { ...q, q: clean(q.q), a: clean(q.a), wrong1: clean(q.wrong1), wrong2: clean(q.wrong2), wrong3: clean(q.wrong3), note: clean(q.note) };
+    if (!cq.q || !cq.a || !cq.wrong1 || !cq.wrong2 || !cq.wrong3) return false;
+    const opts = [cq.a, cq.wrong1, cq.wrong2, cq.wrong3].map((x) => x.toLowerCase());
+    if (new Set(opts).size !== 4) return false;
+    setCustomQuestions((arr) => [{ id: 'cq' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt: Date.now(), ...cq }, ...arr]);
+    return true;
+  }, []);
+  const deleteCustomQuestion = useCallback((id: string) => setCustomQuestions((arr) => arr.filter((q) => q.id !== id)), []);
+  const clearCustomLogs = useCallback(() => setCustomLogs([]), []);
+
+  const questionsForPlay = useCallback((subj: GameSubj, count: number, noPassage = false): Q[] => {
+    if (subj === 'C') {
+      const all = customQuestions.map((c, i) => customToQ(c, i));
+      return shuffle(all).slice(0, count);
+    }
+    if (subj === 'X') return mixedQuestions(year, count, noPassage);
+    return questionsFor(subj, year, count, noPassage);
+  }, [customQuestions, year]);
+
   const recordAnswer = useCallback((q: Q, ok: boolean) => {
     setAnswered((n) => n + 1);
     if (ok) {
       setCorrect((n) => n + 1);
-      setRight((r) => ({ ...r, [q.subj]: { ...r[q.subj], [q.idx]: true } }));
+      if (!q.custom) setRight((r) => ({ ...r, [q.subj]: { ...r[q.subj], [q.idx]: true } }));
+    }
+    if (q.custom && q.customId) {
+      setCustomLogs((logs) => [...logs.slice(-99), { id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), questionId: q.customId!, question: q.q, subj: q.subj, correct: ok, at: Date.now() }]);
     }
   }, []);
 
@@ -271,8 +327,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     screen, tab, setTab, gameSubj, setGameSubj, game, gameRun, parentOpen, setParentOpen, settingsOpen, setSettingsOpen,
     enter, changePlayer, startGame, leaveGame, recordAnswer, finishGame, reset, resetNote, ready, pin, setPin, streak,
     buddyId, buddyBg, favs, custom, setBuddyChoice, promoteFav, addFav, removeFav, createCustom, deleteCustom,
+    customQuestions, customLogs, addCustomQuestion, deleteCustomQuestion, clearCustomLogs, questionsForPlay,
   }), [name, buddy, year, stars, coins, answered, correct, right, stickers, soundOn, toggleSound, screen, tab, setTab,
-    gameSubj, game, gameRun, parentOpen, settingsOpen, enter, changePlayer, startGame, leaveGame, recordAnswer, finishGame, reset, resetNote, ready, pin, streak, buddyId, buddyBg, favs, custom, setBuddyChoice, promoteFav, addFav, removeFav, createCustom, deleteCustom]);
+    gameSubj, game, gameRun, parentOpen, settingsOpen, enter, changePlayer, startGame, leaveGame, recordAnswer, finishGame, reset, resetNote, ready, pin, streak, buddyId, buddyBg, favs, custom, setBuddyChoice, promoteFav, addFav, removeFav, createCustom, deleteCustom, customQuestions, customLogs, addCustomQuestion, deleteCustomQuestion, clearCustomLogs, questionsForPlay]);
 
   return <C.Provider value={value}>{children}</C.Provider>;
 }

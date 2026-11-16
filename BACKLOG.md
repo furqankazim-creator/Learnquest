@@ -258,3 +258,35 @@
     - `src/screens/Settings.tsx`
     - `README.md`
     - `src/appInfo.ts`
+
+- **12:51:22 – 13:05:49** ⏱️ Active Coding Session (**14 min**)
+  - 📁 **Files Worked On (8):**
+    - `src/screens/Shell.tsx`
+    - `scripts/dump-all.ts`
+    - `dump.txt`
+    - `scripts/check-math-overwrites.ts`
+    - `scripts/detailed-audit.ts`
+    - `scripts/test-math-generators.ts`
+    - `scripts/test-pool-math.ts`
+    - `scripts/check-examples.ts`
+
+- **13:14:13 – 13:35:45** ⏱️ Active Coding Session (**22 min**)
+  - 📁 **Files Worked On (9):**
+    - `package.json`
+    - `src/data/fixes.ts`
+    - `src/state.tsx`
+    - `src/data/mathsGen.ts`
+    - `src/data/mathsGen2.ts`
+    - `src/screens/Game.tsx`
+    - `src/screens/Shell.tsx`
+    - `src/screens/Settings.tsx`
+    - `scripts/fix-hooks.js`
+
+- **14:25:25 – 14:31:50** ⏱️ Active Coding Session (**6 min**)
+  - 📁 **Files Worked On (6):**
+    - `src/screens/Game.tsx`
+    - `src/screens/Settings.tsx`
+    - `src/screens/Parent.tsx`
+    - `src/data/mathsGen.ts`
+    - `src/data/mathsGen2.ts`
+    - `src/state.tsx`

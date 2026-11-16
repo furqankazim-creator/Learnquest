@@ -35,8 +35,10 @@ export const FIX: Record<string, RawQ> = {
   'S4.6': ['Which state of matter takes the shape of its container but keeps its volume?', 'Liquid', 'Solid', 'Gas', 'Ice', '💧', 'A liquid flows to fit its container; a gas spreads to fill it.'],
 
   // ---------------- Maths: original wording ----------------
+  'M2.11': ['How many minutes are in half an hour?', '30', '15', '60', '45', '⏰', 'There are 60 minutes in a whole hour, so half an hour is 30 minutes.'],
   'M3.10': ['One tenth of 50 is…', '5', '6', '4', '7', '🔢', '50 ÷ 10 = 5.'],
   'M5.0': ['3/5 of 25 is…', '15', '16', '14', '17', '🍕', '25 ÷ 5 = 5, then 5 × 3 = 15.'],
+  'M5.10': ['Which number is prime?', '7', '9', '15', '21', '🔢', '7 has only two factors: 1 and 7. 9, 15 and 21 can all be divided by 3.'],
 
   // ---------------- Science extras: replace duplicates of an existing concept ----------------
   'S1.14': ['Which part of a plant is green and catches sunlight?', 'leaf', 'root', 'seed', 'soil', '🍃', 'Leaves use sunlight to make food.'],

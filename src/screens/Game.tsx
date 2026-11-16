@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, ScrollView, View } from 'react-native';
+import { Animated, Image, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FIXED, SUBJECTS, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
-import { GameKind, Q, mixedQuestions, questionsFor, shuffle, spoken, useApp } from '../state';
+import { GameKind, Q, shuffle, spoken, useApp } from '../state';
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
 import MathVisual from '../components/MathVisual';
@@ -40,6 +40,8 @@ function QuestionCard({ q, extra, help, hint, onHelp }: { q: Q; extra?: string; 
         <SciVisual key={q.q} spec={q.sv} wide={wide} compact={compact} />
       ) : q.ev ? (
         <EngVisual key={q.q} spec={q.ev} wide={wide} compact={compact} />
+      ) : q.imageUri ? (
+        <Image source={{ uri: q.imageUri }} style={{ width: circle, height: circle, borderRadius: 22, backgroundColor: (p as any)[s.soft], marginBottom: wide ? 0 : 4 }} resizeMode="cover" />
       ) : (
         <View style={{ width: circle, height: circle, borderRadius: circle / 2, backgroundColor: (p as any)[s.soft], alignItems: 'center', justifyContent: 'center', marginBottom: wide ? 0 : 4 }}>
           <T size={circle * 0.65} style={{ lineHeight: circle * 0.8 }}>{q.e}</T>
@@ -104,8 +106,12 @@ function MatchCard({ label, emoji, state, onPress }: { label: string; emoji?: st
         opacity: state === 'done' ? 0.75 : 1,
       }, shadow]}
     >
-      {emoji ? <T size={56} style={{ lineHeight: 68 }}>{emoji}</T> : null}
-      <T w={800} size={emoji ? 14 : 19} numberOfLines={emoji ? 4 : 5} style={{ textAlign: 'center', marginTop: emoji ? 2 : 0 }}>{label}</T>
+      {emoji || label ? (
+        <>
+          {emoji ? <T size={56} style={{ lineHeight: 68 }}>{emoji}</T> : null}
+          <T w={800} size={emoji ? 14 : 19} numberOfLines={emoji ? 4 : 5} style={{ textAlign: 'center', marginTop: emoji ? 2 : 0 }}>{label}</T>
+        </>
+      ) : null}
     </Press>
   );
 }
@@ -160,8 +166,13 @@ export default function Game() {
 
   // questions are built once per game run
   const qs = useMemo<Q[]>(() => {
-    if (k === 'mission' || gameSubj === 'X') return mixedQuestions(year, k === 'match' ? 12 : 6, k === 'match');
-    return questionsFor(gameSubj, year, k === 'match' ? 12 : 6, k === 'match');
+    const want = k === 'match' ? 12 : 6;
+    const got = app.questionsForPlay(gameSubj, want, k === 'match');
+    if (got.length >= want) return got;
+    if (got.length === 0) return [];
+    const out = [...got];
+    while (out.length < want) out.push(got[out.length % got.length]);
+    return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app.gameRun]);
 
@@ -189,7 +200,7 @@ export default function Game() {
 
   // read each new question aloud
   useEffect(() => {
-    if (result) return;
+    if (result || qs.length === 0) return;
     if (k !== 'match' && qs[i]) Sound.speak(spoken(qs[i]));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i, result]);
@@ -201,6 +212,23 @@ export default function Game() {
     Sound.fanfare();
     setTimeout(() => Sound.speak(`Well done! You got ${r} of ${total} right!`), 500);
   }, [finishGame]);
+
+  if (qs.length === 0) {
+    return (
+      <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: p.bg }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <View style={[{ backgroundColor: p.card, borderRadius: 22, padding: 24, alignItems: 'center', maxWidth: 420 }, shadow]}>
+            <T size={56} style={{ lineHeight: 68 }}>📝</T>
+            <T w={800} size={22} style={{ marginTop: 8, textAlign: 'center' }}>No custom questions yet</T>
+            <T w={700} size={15} color={p.muted} style={{ marginTop: 8, textAlign: 'center', lineHeight: 22 }}>Ask a grown-up to add questions in Settings (PIN required). They will appear here for the child to play.</T>
+            <Press onPress={leaveGame} style={{ marginTop: 16, backgroundColor: p.sky, borderRadius: 16, minHeight: 52, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' }}>
+              <T w={800} size={16} color="#fff">Back</T>
+            </Press>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const answer = (q: Q, optIdx: number) => {
     if (locked || result) return;
@@ -327,7 +355,7 @@ export default function Game() {
             const r = rightCol[idx];
             return (
               <View key={idx} style={{ flexDirection: 'row', gap: 12, alignItems: 'stretch' }}>
-                <MatchCard emoji={q.e} label={shortQ(q.q)} state={doneL[idx] ? 'done' : sel === idx ? 'sel' : 'idle'} onPress={() => tapLeft(idx)} />
+                <MatchCard emoji={q.e === '✨' ? undefined : q.e} label={shortQ(q.q)} state={doneL[idx] ? 'done' : sel === idx ? 'sel' : 'idle'} onPress={() => tapLeft(idx)} />
                 <MatchCard label={r.label} state={doneR[r.idx] ? 'done' : flash === r.idx ? 'wrong' : 'idle'} onPress={() => tapRight(r.idx)} />
               </View>
             );

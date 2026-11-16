@@ -16,6 +16,7 @@ function Dashboard() {
   const p = usePalette();
   const shadow = useCardShadow();
   const { name, year, right, answered, soundOn, toggleSound, changePlayer, reset, resetNote, setPin, setParentOpen } = useApp();
+  const { customQuestions } = useApp() as any;
 
   const pending: Subj[] = [];
   const counts: Record<Subj, number> = { E: 0, M: 0, S: 0 };
@@ -55,6 +56,20 @@ function Dashboard() {
           </View>
         );
       })}
+
+      {customQuestions.length > 0 ? (
+        <View style={[card, shadow]}>
+          <T w={700} size={17} style={{ marginBottom: 8 }}>📝 My Questions</T>
+          <T w={600} size={14} color={p.muted} style={{ lineHeight: 21, marginBottom: 10 }}>
+            {customQuestions.length} custom question{customQuestions.length === 1 ? '' : 's'} created. Child plays them in Games → My Qs.
+          </T>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <Press onPress={() => setParentOpen(false)} style={{ flex: 1, backgroundColor: p.violetSoft, borderRadius: 14, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' }}>
+              <T w={800} size={14}>Manage in Settings</T>
+            </Press>
+          </View>
+        </View>
+      ) : null}
 
       <View style={[card, shadow]}>
         <T w={700} size={17} style={{ marginBottom: 8 }}>⚙️ Settings</T>

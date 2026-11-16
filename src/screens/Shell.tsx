@@ -116,49 +116,65 @@ function Games() {
   const p = usePalette();
   const { wide } = useLayout();
   const shadow = useCardShadow();
-  const { gameSubj, setGameSubj, startGame, year } = useApp();
-  const chips: { s: GameSubj; emoji: string; label: string; border: string; bg: string }[] = [
-    { s: 'E', emoji: '📚', label: 'English', border: p.violet, bg: p.violetSoft },
-    { s: 'M', emoji: '🔢', label: 'Maths', border: p.orange, bg: p.orangeSoft },
-    { s: 'S', emoji: '🔬', label: 'Science', border: p.green, bg: p.greenSoft },
-    { s: 'X', emoji: '🌈', label: 'Mixed', border: p.sky, bg: p.selSoft },
+  const { gameSubj, setGameSubj, startGame, year, customQuestions } = useApp();
+  const chips: { s: GameSubj; label: string; border: string; bg: string }[] = [
+    { s: 'E', label: 'English', border: p.violet, bg: p.violetSoft },
+    { s: 'M', label: 'Maths', border: p.orange, bg: p.orangeSoft },
+    { s: 'S', label: 'Science', border: p.green, bg: p.greenSoft },
+    { s: 'X', label: 'Mixed', border: p.sky, bg: p.selSoft },
+    { s: 'C', label: 'My Qs', border: p.pink, bg: p.card },
   ];
   return (
     <View>
       <SecTitle>Choose a subject</SecTitle>
-      <View style={{ flexDirection: 'row', gap: 8, marginTop: -8, marginBottom: 14 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: -8, marginBottom: 14 }}>
         {chips.map((c) => {
           const sel = gameSubj === c.s;
+          const iconName = ({ E: 'english', M: 'maths', S: 'science', X: 'mixed', C: 'mission' } as const)[c.s];
           return (
             <Press
               key={c.s}
               onPress={() => { setGameSubj(c.s); Sound.tap(); }}
               style={[{
-                flex: 1, minHeight: 52, borderRadius: 14, borderWidth: 3, paddingVertical: 12, paddingHorizontal: 2,
+                width: wide ? '18.5%' : '31%', flexGrow: 1, minHeight: 60, borderRadius: 14, borderWidth: 3, paddingVertical: 10, paddingHorizontal: 4,
                 flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
                 backgroundColor: sel ? c.bg : p.card, borderColor: sel ? c.border : 'transparent',
               }, shadow]}
             >
-              <AppIcon name={({ E: 'english', M: 'maths', S: 'science', X: 'mixed' } as const)[c.s]} size={34} />
-              <T w={800} size={14} numberOfLines={1}>{c.label}</T>
+              <AppIcon name={iconName} size={30} />
+              <T w={800} size={13} numberOfLines={1}>{c.label}</T>
+              {c.s === 'C' ? <T w={700} size={10.5} color={p.muted}>{customQuestions.length} made</T> : null}
             </Press>
           );
         })}
       </View>
 
+      {gameSubj === 'C' ? (
+        <View style={[{ backgroundColor: p.violetSoft, borderRadius: 16, padding: 14, marginBottom: 14, borderLeftWidth: 4, borderLeftColor: p.violet }, shadow]}>
+          <T w={800} size={15}>My Questions mode</T>
+          <T w={700} size={13.5} color={p.muted} style={{ marginTop: 4, lineHeight: 19 }}>
+            {customQuestions.length > 0
+              ? `Play ${customQuestions.length} question${customQuestions.length === 1 ? '' : 's'} created by a grown-up. Only you can see them here.`
+              : 'No custom questions yet. A grown-up can add them in Settings (PIN required).'}
+          </T>
+        </View>
+      ) : null}
+
       <T w={800} size={20} style={{ marginBottom: 12 }}>Choose a game</T>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-        {GAMES.map((g) => (
+        {GAMES.map((g) => {
+          const disabled = gameSubj === 'C' && customQuestions.length === 0;
+          return (
           <Press
             key={g.k}
-            onPress={() => startGame(g.k)}
-            style={[{ width: wide ? '23.5%' : '47.5%', flexGrow: 1, borderRadius: 20, paddingVertical: 16, paddingHorizontal: 14, backgroundColor: p.card, minHeight: 184 }, shadow]}
+            onPress={() => { if (!disabled) startGame(g.k); }}
+            style={[{ width: wide ? '23.5%' : '47.5%', flexGrow: 1, borderRadius: 20, paddingVertical: 16, paddingHorizontal: 14, backgroundColor: p.card, minHeight: 184, opacity: disabled ? 0.45 : 1 }, shadow]}
           >
             <View style={{ marginBottom: 8 }}><AppIcon name={GAME_ICON[g.k]} size={78} /></View>
             <T w={700} size={16.5}>{g.name}</T>
             <T w={700} size={12.5} color={p.muted}>{g.desc}</T>
           </Press>
-        ))}
+        ); })}
       </View>
       <T w={700} size={14} color={p.muted} style={{ marginTop: 14 }}>
         Games use your school year: Year {year}. Change it any time on the first screen or in the Grown-ups&apos; Area.
@@ -327,22 +343,22 @@ function Rewards() {
 
 function TabBar() {
   const p = usePalette();
-  const { contentMax } = useLayout();
+  const shadow = useCardShadow();
   const insets = useSafeAreaInsets();
   const { tab, setTab } = useApp();
-  const tabs: { t: Tab; ico: string; label: string }[] = [
-    { t: 'home', ico: '🏠', label: 'Home' },
-    { t: 'games', ico: '🎮', label: 'Games' },
-    { t: 'rewards', ico: '🏆', label: 'Rewards' },
-    { t: 'parent', ico: '👨‍👩‍👧', label: 'Parent' },
+  const tabs: { t: Tab; label: string }[] = [
+    { t: 'home', label: 'Home' },
+    { t: 'games', label: 'Games' },
+    { t: 'rewards', label: 'Rewards' },
+    { t: 'parent', label: 'Parent' },
   ];
   return (
-    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', pointerEvents: 'box-none' }}>
+    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 10) + 8, pointerEvents: 'box-none' }}>
       <View
-        style={{
-          flexDirection: 'row', width: '100%', maxWidth: contentMax, backgroundColor: p.card, borderTopWidth: 2, borderTopColor: p.line,
-          paddingTop: 8, paddingHorizontal: 8, paddingBottom: 8 + insets.bottom,
-        }}
+        style={[{
+          flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 360, backgroundColor: p.card, borderRadius: 28,
+          paddingVertical: 8, paddingHorizontal: 8, gap: 6, borderWidth: 1, borderColor: p.line,
+        }, shadow]}
       >
         {tabs.map((x) => {
           const on = tab === x.t;
@@ -350,10 +366,16 @@ function TabBar() {
             <Press
               key={x.t}
               onPress={() => { Sound.tap(); setTab(x.t); }}
-              style={{ flex: 1, minHeight: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 8, backgroundColor: on ? p.violetSoft : 'transparent' }}
+              accessibilityLabel={x.label}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              style={{
+                flex: 1, minHeight: 54, borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 6, paddingHorizontal: 4,
+                backgroundColor: on ? p.violetSoft : 'transparent', borderWidth: on ? 1.5 : 0, borderColor: on ? p.violet : 'transparent',
+              }}
             >
-              <AppIcon name={x.t} size={36} />
-              <T w={800} size={12} color={on ? p.ink : p.muted}>{x.label}</T>
+              <AppIcon name={x.t} size={28} />
+              <T w={800} size={11} color={on ? p.violet : p.muted} numberOfLines={1}>{x.label}</T>
             </Press>
           );
         })}
