@@ -56,4 +56,7 @@ Education (Primary). Target audience: ages 5–8 and 9–12 — choose the **Kid
 (Apple also requires iPad screenshots because the app supports tablets.)
 
 ## Support / contact
-[YOUR SUPPORT EMAIL]
+REPLACE_WITH_SUPPORT_EMAIL@example.com (update before publishing; keep in sync with `src/appInfo.ts`)
+
+## Privacy policy URL
+REPLACE_WITH_PRIVACY_POLICY_URL (host `docs/PRIVACY_POLICY.md` publicly and paste the final URL in Play Console and `src/appInfo.ts`)

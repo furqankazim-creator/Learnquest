@@ -1,6 +1,6 @@
 # Privacy Policy — Kids Learning App
 
-_Last updated: [DATE]_
+_Last updated: 2026-11-16_
 
 Kids Learning App ("the app") is an educational game for children in school Years 1–6 (ages 5–11). We built it so that **no personal information leaves the device.**
 
@@ -36,4 +36,6 @@ The app is designed for children and complies with the principle of data minimis
 If this policy changes we will update the date above and the text inside the app.
 
 ## Contact
-Questions: **[YOUR CONTACT EMAIL]**
+Questions/support: **REPLACE_WITH_SUPPORT_EMAIL@example.com** (update before publishing)
+
+> **Before Play Store submission:** host this policy at a public URL, replace the support email above, and set the same values in `src/appInfo.ts`. Use the hosted URL as the Privacy Policy URL in Google Play Console.

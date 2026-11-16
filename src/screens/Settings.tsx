@@ -7,6 +7,7 @@ import { Sound } from '../sound';
 import { Avatar, Creator, Library } from '../components/Characters';
 import PinPad from '../components/PinPad';
 import { MAX_FAVS, findChar } from '../data/characters';
+import { APP_NAME, PRIVACY_LAST_UPDATED, PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '../appInfo';
 
 const THEMES: { k: ThemePref; ico: string; label: string; sub: string }[] = [
   { k: 'light', ico: '☀️', label: 'Light', sub: 'Bright cream' },
@@ -34,11 +35,11 @@ export default function Settings() {
         >
           <T size={26}>←</T>
         </Press>
-        <T w={800} size={24} style={{ flex: 1 }}>Settings ⚙️</T>
+        <T w={800} size={24} style={{ flex: 1 }}>Settings</T>
       </View>
 
       <View style={[card, shadow, { marginTop: 14 }]}>
-        <T w={700} size={17} style={{ marginBottom: 4 }}>🎨 Colour theme</T>
+        <T w={700} size={17} style={{ marginBottom: 4 }}>Colour theme</T>
         <T w={600} size={13.5} color={p.muted} style={{ marginBottom: 12 }}>Pick how the app looks.</T>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           {THEMES.map((t) => {
@@ -68,12 +69,12 @@ export default function Settings() {
           Sound is {soundOn ? 'on' : 'off'} — questions are read aloud and games play gentle sounds.
         </T>
         <Press onPress={toggleSound} style={{ backgroundColor: soundOn ? p.sunny : p.violetSoft, borderRadius: 14, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
-          <T w={800} size={16} color={soundOn ? '#2D2A4A' : p.ink}>{soundOn ? '🔊 Turn sound off' : '🔇 Turn sound on'}</T>
+          <T w={800} size={16} color={soundOn ? '#2D2A4A' : p.ink}>{soundOn ? 'Turn sound off' : 'Turn sound on'}</T>
         </Press>
       </View>
 
       <View style={[card, shadow]}>
-        <T w={700} size={17} style={{ marginBottom: 10 }}>👤 Player</T>
+        <T w={700} size={17} style={{ marginBottom: 10 }}>Player</T>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 }}>
           <Avatar e={buddy} bg={buddyBg ?? p.sunny} size={68} />
           <View style={{ flex: 1 }}>
@@ -87,7 +88,7 @@ export default function Settings() {
       </View>
 
       <View style={[card, shadow]}>
-        <T w={700} size={17} style={{ marginBottom: 4 }}>🦸 My characters</T>
+        <T w={700} size={17} style={{ marginBottom: 4 }}>My characters</T>
         <T w={600} size={13.5} color={p.muted} style={{ marginBottom: 12 }}>
           Choose your {MAX_FAVS} favourites — they show on the welcome page. {favs.length} of {MAX_FAVS} chosen.
         </T>
@@ -97,10 +98,10 @@ export default function Settings() {
           ))}
         </View>
         <Press onPress={() => { setFull(false); setLib('manage'); }} accessibilityLabel="Choose favourite characters" style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 56, alignItems: 'center', justifyContent: 'center', padding: 12, marginBottom: 10 }}>
-          <T w={800} size={16}>⭐ Choose favourites (50+ characters)</T>
+          <T w={800} size={16}>Choose favourites (50+ characters)</T>
         </Press>
         <Press onPress={() => setLib('make')} accessibilityLabel="Make my own character" style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 56, alignItems: 'center', justifyContent: 'center', padding: 12 }}>
-          <T w={800} size={16}>🎨 Make my own character</T>
+          <T w={800} size={16}>Make my own character</T>
         </Press>
       </View>
 
@@ -147,16 +148,22 @@ export default function Settings() {
       </Modal>
 
       <View style={[card, shadow]}>
-        <T w={700} size={17} style={{ marginBottom: 8 }}>🔒 Privacy</T>
+        <T w={700} size={17} style={{ marginBottom: 8 }}>Privacy</T>
         <T w={600} size={14} color={p.muted} style={{ lineHeight: 21 }}>
           This app has no accounts, no ads, no chat and no tracking. It never asks for an email, birthday or location. The first name, buddy, school year, stars and stickers are saved only on this device and are never sent anywhere. Grown-ups can erase everything from the Parent tab → Reset, or by deleting the app.
         </T>
+        <T w={700} size={13.5} style={{ marginTop: 10 }}>Policy last updated: {PRIVACY_LAST_UPDATED}</T>
+        <T w={600} size={13.5} color={p.muted} style={{ marginTop: 4, lineHeight: 20 }}>Privacy policy URL: {PRIVACY_POLICY_URL}</T>
       </View>
 
       <View style={[card, shadow]}>
-        <T w={700} size={17} style={{ marginBottom: 8 }}>About this app</T>
+        <T w={700} size={17} style={{ marginBottom: 8 }}>About & support</T>
         <T w={600} size={14} color={p.muted} style={{ lineHeight: 21 }}>
-          English, Maths and Science for Years 1–6 (ages 5–11). No ads, no chat, no timers and no fail screens. Only a first name is used. Progress is saved on this device only.
+          {APP_NAME} for Years 1–6 (ages 5–11). No ads, no chat, no timers and no fail screens. Only a first name is used. Progress is saved on this device only.
+        </T>
+        <T w={700} size={13.5} style={{ marginTop: 10 }}>Support: {SUPPORT_EMAIL}</T>
+        <T w={600} size={12.5} color={p.muted} style={{ marginTop: 6, lineHeight: 18 }}>
+          Before release, replace placeholder values in `src/appInfo.ts`, `app.json` (bundle/package ID), and host `docs/PRIVACY_POLICY.md` at a public URL.
         </T>
       </View>
     </View>

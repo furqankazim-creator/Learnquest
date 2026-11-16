@@ -171,24 +171,138 @@ function Rewards() {
   const p = usePalette();
   const { wide } = useLayout();
   const shadow = useCardShadow();
-  const { stars, coins, answered, correct, stickers } = useApp();
+  const { name, buddy, buddyBg, year, stars, coins, answered, correct, stickers, streak, right } = useApp();
   const pct = answered ? Math.round((correct / answered) * 100) : 0;
-  const stat = (big: React.ReactNode, label: string) => (
-    <View style={[{ width: wide ? '23.5%' : '47.5%', flexGrow: 1, backgroundColor: p.card, borderRadius: 20, padding: 18, alignItems: 'center' }, shadow]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>{big}</View>
-      <T w={700} size={13.5} color={p.muted} style={{ marginTop: 2 }}>{label}</T>
+  const nextSticker = STICKERS.findIndex((_, i) => !stickers.includes(i));
+  const stickerCount = stickers.length;
+  const islandDone = (s: Subj) => Object.keys(right[s]).length;
+
+  const milestones = [
+    { id: 'q10', title: 'Curious Starter', desc: 'Answer 10 questions', done: answered >= 10, icon: '🌱' },
+    { id: 'q50', title: 'Question Hero', desc: 'Answer 50 questions', done: answered >= 50, icon: '🧠' },
+    { id: 's20', title: 'Star Collector', desc: 'Earn 20 stars', done: stars >= 20, icon: '⭐' },
+    { id: 'c50', title: 'Coin Saver', desc: 'Bank 50 coins', done: coins >= 50, icon: '🪙' },
+    { id: 'st3', title: 'On a Roll', desc: 'Reach a 3-day streak', done: streak >= 3, icon: '🔥' },
+    { id: 'st5', title: '5-Day Champion', desc: 'Reach a 5-day streak', done: streak >= 5, icon: '🏅' },
+    { id: 'st6', title: 'Sticker Star', desc: 'Collect 6 stickers', done: stickerCount >= 6, icon: '🎖️' },
+    { id: 'acc', title: 'Sharp Thinker', desc: '80% right (10+ answers)', done: answered >= 10 && pct >= 80, icon: '🎯' },
+  ];
+  const earnedMilestones = milestones.filter((m) => m.done).length;
+
+  let cheer = 'Play a game to earn your first star and sticker!';
+  if (answered === 0) cheer = 'Your treasure chest is ready. Play a game to earn stars, coins and stickers!';
+  else if (nextSticker === -1) cheer = 'Amazing! You collected every sticker. Keep playing to grow your stars and coins!';
+  else if (pct >= 80) cheer = 'Brilliant work! Your answers are shining bright today.';
+  else if (streak >= 2) cheer = `You are on a ${streak}-day streak. Come back tomorrow to keep it going!`;
+  else cheer = 'Every game makes you stronger. Finish games to unlock more stickers!';
+
+  const stat = (big: React.ReactNode, label: string, tint: string) => (
+    <View style={[{ width: wide ? '23.5%' : '47.5%', flexGrow: 1, backgroundColor: p.card, borderRadius: 20, padding: 16, alignItems: 'center', borderWidth: 2, borderColor: tint }, shadow]}>
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>{big}</View>
+      <T w={700} size={13.5} color={p.muted} style={{ marginTop: 4, textAlign: 'center' }}>{label}</T>
     </View>
   );
-  const num = (v: number | string) => <T w={800} size={36} style={{ lineHeight: 46 }}>{v}</T>;
+  const num = (v: number | string, color?: string) => <T w={800} size={34} color={color} style={{ lineHeight: 42 }}>{v}</T>;
+
   return (
     <View>
-      <SecTitle>My rewards 🏆</SecTitle>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-        {stat(<><T size={64} style={{ lineHeight: 76 }}>⭐</T>{num(stars)}</>, 'Stars earned')}
-        {stat(<><T size={64} style={{ lineHeight: 76 }}>🪙</T>{num(coins)}</>, 'Coins banked')}
-        {stat(num(answered), 'Questions answered')}
-        {stat(<>{num(pct)}<T w={800} size={36} style={{ lineHeight: 46 }}>%</T></>, 'Answered right')}
+      <SecTitle>My rewards</SecTitle>
+      <View style={[{ backgroundColor: p.navy, borderRadius: 22, padding: 18, flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 14 }, shadow]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+          <Avatar e={buddy} bg={buddyBg ?? p.sunny} size={74} />
+          <View style={{ flex: 1 }}>
+            <T w={800} size={22} color="#fff" numberOfLines={1}>{name}&apos;s treasure</T>
+            <T w={700} size={14} color="#D9D6F5" style={{ marginTop: 2 }}>Year {year} • {stickerCount}/{STICKERS.length} stickers • {earnedMilestones}/{milestones.length} badges</T>
+            <T w={700} size={14.5} color="#fff" style={{ marginTop: 8, lineHeight: 21 }}>{cheer}</T>
+          </View>
+        </View>
+        <View style={{ backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 18, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center', minWidth: wide ? 150 : undefined, alignSelf: wide ? 'auto' : 'stretch' }}>
+          <T size={30} style={{ lineHeight: 36 }}>🔥</T>
+          <T w={800} size={28} color="#fff" style={{ lineHeight: 34 }}>{streak}</T>
+          <T w={700} size={13} color="#D9D6F5">day streak</T>
+          <T w={700} size={12.5} color="#D9D6F5" style={{ marginTop: 4, textAlign: 'center' }}>{streak > 0 ? 'Keep it going!' : 'Play today to start'}</T>
+        </View>
       </View>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 14 }}>
+        {stat(<><T size={46} style={{ lineHeight: 54 }}>⭐</T>{num(stars, p.ink)}</>, 'Stars earned', p.orangeSoft)}
+        {stat(<><T size={46} style={{ lineHeight: 54 }}>🪙</T>{num(coins, p.ink)}</>, 'Coins banked', p.sunny + '55')}
+        {stat(<><T size={40} style={{ lineHeight: 48 }}>🧩</T>{num(answered, p.ink)}</>, 'Questions answered', p.violetSoft)}
+        {stat(<><T size={40} style={{ lineHeight: 48 }}>🎯</T>{num(`${pct}%`, p.ink)}</>, 'Answered right', p.greenSoft)}
+      </View>
+
+      <SecTitle>Next sticker</SecTitle>
+      <View style={[{ backgroundColor: p.card, borderRadius: 20, padding: 16 }, shadow]}>
+        {nextSticker === -1 ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <T size={52} style={{ lineHeight: 62 }}>🏆</T>
+            <View style={{ flex: 1 }}>
+              <T w={800} size={18}>Sticker wall complete!</T>
+              <T w={700} size={14} color={p.muted} style={{ marginTop: 4 }}>You earned all {STICKERS.length} stickers. Every sticker stays with you forever.</T>
+            </View>
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <View style={{ width: 78, height: 78, borderRadius: 39, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: p.violet }}>
+              <T size={44} style={{ lineHeight: 54 }}>{STICKERS[nextSticker]}</T>
+            </View>
+            <View style={{ flex: 1 }}>
+              <T w={800} size={18}>Finish a game to unlock this sticker</T>
+              <T w={700} size={14} color={p.muted} style={{ marginTop: 4 }}>Get at least one answer right in a game and a new sticker will join your wall.</T>
+              <ProgressBar pct={(stickerCount / STICKERS.length) * 100} color={p.violet} />
+              <T w={700} size={13} color={p.muted} style={{ marginTop: 4 }}>{stickerCount} of {STICKERS.length} stickers collected</T>
+            </View>
+          </View>
+        )}
+      </View>
+
+      <SecTitle>Island progress</SecTitle>
+      <View style={wide ? { flexDirection: 'row', gap: 12 } : { gap: 12 }}>
+        {SUBJ_KEYS.map((s) => {
+          const info = SUBJECTS[s];
+          const done = islandDone(s);
+          const c = (p as any)[info.color] as string;
+          const soft = (p as any)[info.soft] as string;
+          return (
+            <View key={s} style={[{ flex: wide ? 1 : undefined, backgroundColor: p.card, borderRadius: 20, padding: 16 }, shadow]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: soft, alignItems: 'center', justifyContent: 'center' }}>
+                  <AppIcon name={SUBJECT_ICON[s]} size={32} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <T w={800} size={17}>{info.name}</T>
+                  <T w={700} size={13} color={p.muted}>{done} of {POOL_SIZE} questions mastered</T>
+                </View>
+                <T w={800} size={16} color={c}>{Math.round((done / POOL_SIZE) * 100)}%</T>
+              </View>
+              <ProgressBar pct={(done / POOL_SIZE) * 100} color={c} />
+            </View>
+          );
+        })}
+      </View>
+
+      <SecTitle>My badges</SecTitle>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        {milestones.map((m) => (
+          <View
+            key={m.id}
+            style={[{
+              width: wide ? '23.5%' : '47.5%', flexGrow: 1, backgroundColor: m.done ? p.card : p.bg, borderRadius: 18, padding: 14,
+              borderWidth: 2, borderColor: m.done ? p.green : p.line, opacity: m.done ? 1 : 0.72,
+            }, m.done ? shadow : null]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <T size={28} style={{ lineHeight: 34 }}>{m.icon}</T>
+              <View style={{ flex: 1 }}>
+                <T w={800} size={15} numberOfLines={1}>{m.title}</T>
+                <T w={700} size={12.5} color={m.done ? p.green : p.muted}>{m.done ? 'Earned' : 'Keep going'}</T>
+              </View>
+            </View>
+            <T w={700} size={13} color={p.muted} style={{ marginTop: 6, lineHeight: 18 }}>{m.desc}</T>
+          </View>
+        ))}
+      </View>
+
       <SecTitle>Sticker wall</SecTitle>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {STICKERS.map((s, i) => {
@@ -196,14 +310,17 @@ function Rewards() {
           return (
             <View
               key={i}
-              style={[{ width: 80, height: 80, borderRadius: 40, backgroundColor: p.card, alignItems: 'center', justifyContent: 'center', opacity: got ? 1 : 0.28 }, shadow]}
+              style={[{
+                width: wide ? 84 : 76, height: wide ? 84 : 76, borderRadius: (wide ? 84 : 76) / 2, backgroundColor: got ? p.card : p.bg,
+                alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: got ? p.sunny : p.line, opacity: got ? 1 : 0.55,
+              }, got ? shadow : null]}
             >
-              <T size={52} style={got ? null : ({ filter: 'grayscale(1)' } as any)}>{s}</T>
+              <T size={got ? 46 : 40} style={got ? null : ({ filter: 'grayscale(1)' } as any)}>{s}</T>
             </View>
           );
         })}
       </View>
-      <T w={700} size={14} color={p.muted} style={{ marginTop: 12 }}>Finish a game to earn a sticker. Stickers are never taken away.</T>
+      <T w={700} size={14} color={p.muted} style={{ marginTop: 12, marginBottom: 8 }}>Stars and coins always grow, never shrink. Stickers stay on your wall forever. Every question you try helps you learn!</T>
     </View>
   );
 }
