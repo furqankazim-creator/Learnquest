@@ -96,12 +96,12 @@ export default function HopeBridgePromo({ view = 'portfolio' }: { view?: 'portfo
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
       <View style={[{ borderRadius: 28, overflow: 'hidden', marginTop: 12, marginBottom: 18 }, shadow]}>
-        <View style={{ backgroundColor: '#311B92', padding: 20 }}>
+        <View style={{ backgroundColor: '#EEEAFE', padding: 20 }}>
           <T size={38} style={{ lineHeight: 44, textAlign: 'center' }}>🌉</T>
-          <T w={800} size={27} color="#fff" style={{ textAlign: 'center', marginTop: 6 }}>Hope Bridge Digital</T>
-          <T w={700} size={14} color="#D9D6F5" style={{ textAlign: 'center', marginTop: 4, lineHeight: 20 }}>Calm, Family-First Apps for Autism, Speech & Attention Needs</T>
+          <T w={800} size={27} color="#34316A" style={{ textAlign: 'center', marginTop: 6 }}>Hope Bridge Digital</T>
+          <T w={700} size={14} color="#6862A1" style={{ textAlign: 'center', marginTop: 4, lineHeight: 20 }}>Calm, family-first apps for learning and communication</T>
         </View>
-        <View style={{ backgroundColor: p.card, padding: 18 }}>
+        <View style={{ backgroundColor: '#FFFDF8', padding: 18 }}>
           <T w={600} size={15} color={p.ink} style={{ lineHeight: 23 }}>
             {HOPE_BRIDGE_MISSION}
           </T>
@@ -113,8 +113,8 @@ export default function HopeBridgePromo({ view = 'portfolio' }: { view?: 'portfo
             ))}
           </View>
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
-            <Press onPress={() => openLink(HOPE_BRIDGE_URL)} style={{ flex: 1, backgroundColor: '#311B92', borderRadius: 16, minHeight: 54, alignItems: 'center', justifyContent: 'center' }}>
-              <T w={800} size={16} color="#fff">🌐 Visit live site</T>
+            <Press onPress={() => openLink(HOPE_BRIDGE_URL)} style={{ flex: 1, backgroundColor: '#FFCF68', borderRadius: 16, minHeight: 54, alignItems: 'center', justifyContent: 'center' }}>
+              <T w={800} size={16} color="#34316A">🌐 Visit live site</T>
             </Press>
             <Press onPress={() => Linking.openURL(`mailto:${HOPE_BRIDGE_EMAIL}`)} style={{ flex: 1, backgroundColor: p.sky, borderRadius: 16, minHeight: 54, alignItems: 'center', justifyContent: 'center' }}>
               <T w={800} size={16} color={p.ink}>✉️ Email</T>
@@ -123,6 +123,21 @@ export default function HopeBridgePromo({ view = 'portfolio' }: { view?: 'portfo
         </View>
       </View>
 
+      <View style={[{ backgroundColor: '#FFFDF8', borderRadius: 20, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: '#EEE8D8' }, shadow]}>
+        <T w={800} size={18} style={{ marginBottom: 8 }}>Empowering every child’s unique voice</T>
+        <T w={600} size={14} color={p.muted} style={{ lineHeight: 21, marginBottom: 14 }}>
+          Discover calm, family-friendly learning and communication apps.
+        </T>
+        <Press onPress={() => openLink(HOPE_BRIDGE_URL)} style={{ backgroundColor: '#FFCF68', borderRadius: 14, minHeight: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+          <T w={800} size={16} color="#34316A">🌐 Visit hopebridgedigital.site</T>
+        </Press>
+        <Press onPress={() => Linking.openURL(`mailto:${HOPE_BRIDGE_EMAIL}`)} style={{ backgroundColor: '#EEEAFE', borderRadius: 14, minHeight: 52, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#D8D2F7' }}>
+          <T w={800} size={16} color="#34316A">✉️ Contact the publisher</T>
+        </Press>
+      </View>
+
+      {false && (
+      <>
       <View style={[card, shadow]}>
         <T w={800} size={18} style={{ marginBottom: 8 }}>Portfolio overview</T>
         <T w={600} size={14} color={p.muted} style={{ lineHeight: 21 }}>
@@ -222,6 +237,8 @@ export default function HopeBridgePromo({ view = 'portfolio' }: { view?: 'portfo
           <T w={700} size={14} color={p.ink}>{HOPE_BRIDGE_EMAIL}</T>
         </Press>
       </View>
+      </>
+      )}
     </ScrollView>
   );
 }

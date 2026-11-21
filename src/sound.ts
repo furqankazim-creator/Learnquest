@@ -125,6 +125,13 @@ function playNative(name: string) {
   }
 }
 
+function friendlyName(name?: string) {
+  const n = (name || '').replace(/\s+/g, ' ').trim();
+  if (!n || n.toLowerCase() === 'guest explorer') return '';
+  return n.split(' ')[0];
+}
+function pick<T>(arr: T[]) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 export const Sound = {
   on: true,
   play(name: keyof typeof SOUNDS) {
@@ -149,6 +156,42 @@ export const Sound = {
         .trim();
       if (clean) Speech.speak(clean, { rate: 0.92, pitch: 1.05, language: 'en-GB' });
     } catch {}
+  },
+  greet(name?: string) {
+    const n = friendlyName(name);
+    const msg = n
+      ? pick([`Hello ${n}! Ready to learn?`, `Hi ${n}! Let's have fun learning!`, `Welcome ${n}! Let's get started!`, `Hello ${n}! Great to see you!`])
+      : pick(['Hello! Ready to learn?', "Hi there! Let's have fun learning!", "Welcome! Let's get started!"]);
+    this.speak(msg);
+  },
+  praise(name?: string) {
+    const n = friendlyName(name);
+    const msg = n
+      ? pick([`Well done, ${n}! That's right!`, `Great job, ${n}!`, `Brilliant, ${n}!`, `That's correct, ${n}!`, `Amazing work, ${n}!`])
+      : pick(['Well done! That is right!', 'Great job!', 'Brilliant!', "That's correct!", 'Amazing work!']);
+    this.speak(msg);
+  },
+  encourage(name?: string) {
+    const n = friendlyName(name);
+    const msg = n
+      ? pick([`Good try, ${n}. Have another go.`, `Nice try, ${n}. You can do it!`, `Almost there, ${n}. Try again!`])
+      : pick(['Good try. Have another go.', 'Nice try. You can do it!', 'Almost there. Try again!']);
+    this.speak(msg);
+  },
+  matchPraise(name?: string) {
+    const n = friendlyName(name);
+    this.speak(n ? pick([`Great matching, ${n}!`, `Well done, ${n}! That's a match!`]) : pick(['Great matching!', "Well done! That's a match!"]));
+  },
+  celebrate(name?: string, r?: number, total?: number) {
+    const n = friendlyName(name);
+    if (typeof r === 'number' && typeof total === 'number') {
+      const msg = n
+        ? pick([`Well done, ${n}! You got ${r} out of ${total} right!`, `Great work, ${n}! You got ${r} of ${total} correct!`])
+        : pick([`Well done! You got ${r} out of ${total} right!`, `Great work! You got ${r} of ${total} correct!`]);
+      this.speak(msg);
+    } else {
+      this.speak(n ? `Well done, ${n}!` : 'Well done!');
+    }
   },
   stopSpeak() {
     try { Speech.stop(); } catch {}

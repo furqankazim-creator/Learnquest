@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { SUBJECTS, Subj, usePalette } from '../theme';
 import { Press, ProgressBar, T, useCardShadow } from '../components/UI';
-import { POOL_SIZE, useApp } from '../state';
+import { completedForYear, POOL_SIZE, useApp } from '../state';
 import PinPad from '../components/PinPad';
 import { Sound } from '../sound';
 
@@ -21,7 +21,7 @@ function Dashboard() {
   const pending: Subj[] = [];
   const counts: Record<Subj, number> = { E: 0, M: 0, S: 0 };
   SUBJ_KEYS.forEach((s) => {
-    counts[s] = Object.keys(right[s]).length;
+    counts[s] = completedForYear(right, s, year);
     if (counts[s] < POOL_SIZE) pending.push(s);
   });
   let tip: string;

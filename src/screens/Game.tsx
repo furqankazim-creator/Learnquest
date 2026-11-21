@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Image, ScrollView, View } from 'react-native';
+import { Animated, Image, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FIXED, SUBJECTS, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
-import { GameKind, Q, shuffle, spoken, useApp } from '../state';
+import { completedForYear, GameKind, POOL_SIZE, Q, roundForCompleted, roundLabel, shuffle, spoken, useApp } from '../state';
 import { Sound } from '../sound';
 import { useLayout } from '../layout';
 import MathVisual from '../components/MathVisual';
@@ -93,7 +93,7 @@ function FeedbackLine({ fb }: { fb: Feedback }) {
   );
 }
 
-function MatchCard({ label, emoji, state, onPress }: { label: string; emoji?: string; state: 'idle' | 'sel' | 'done' | 'wrong'; onPress: () => void }) {
+function MatchCard({ label, emoji, imageUri, state, onPress }: { label: string; emoji?: string; imageUri?: string; state: 'idle' | 'sel' | 'done' | 'wrong'; onPress: () => void }) {
   const p = usePalette();
   const shadow = useCardShadow();
   return (
@@ -106,10 +106,11 @@ function MatchCard({ label, emoji, state, onPress }: { label: string; emoji?: st
         opacity: state === 'done' ? 0.75 : 1,
       }, shadow]}
     >
-      {emoji || label ? (
+      {emoji || label || imageUri ? (
         <>
+          {imageUri ? <Image source={{ uri: imageUri }} style={{ width: 44, height: 44, borderRadius: 10, marginBottom: 4 }} resizeMode="cover" /> : null}
           {emoji ? <T size={56} style={{ lineHeight: 68 }}>{emoji}</T> : null}
-          <T w={800} size={emoji ? 14 : 19} numberOfLines={emoji ? 4 : 5} style={{ textAlign: 'center', marginTop: emoji ? 2 : 0 }}>{label}</T>
+          <T w={800} size={emoji ? 14 : (imageUri ? 13 : 19)} numberOfLines={emoji ? 4 : 5} style={{ textAlign: 'center', marginTop: emoji ? 2 : imageUri ? 0 : 0 }}>{label}</T>
         </>
       ) : null}
     </Press>
@@ -161,13 +162,18 @@ export default function Game() {
   const balloonW = Math.min(210, Math.floor((balloonAvail - (balloonCols - 1) * 14) / balloonCols));
   const shadow = useCardShadow();
   const app = useApp();
-  const { game: kind, year, buddy, gameSubj, soundOn, toggleSound, leaveGame, recordAnswer, finishGame, startGame, setTab } = app;
+  const { game: kind, year, buddy, gameSubj, right: mastered, setSchoolYear, soundOn, toggleSound, leaveGame, recordAnswer, finishGame, startGame, setTab } = app;
   const k = kind as GameKind;
+  const [startingRound] = useState(() =>
+    gameSubj === 'E' || gameSubj === 'M' || gameSubj === 'S'
+      ? roundForCompleted(completedForYear(mastered, gameSubj, year))
+      : 0
+  );
 
   // questions are built once per game run
   const qs = useMemo<Q[]>(() => {
     const want = k === 'match' ? 12 : 6;
-    const got = app.questionsForPlay(gameSubj, want, k === 'match');
+    const got = app.questionsForPlay(gameSubj, want, k === 'match', k);
     if (got.length >= want) return got;
     if (got.length === 0) return [];
     const out = [...got];
@@ -184,6 +190,7 @@ export default function Game() {
   const [fb, setFb] = useState<Feedback>(null);
   const [wrongSet, setWrongSet] = useState<Record<number, boolean>>({});
   const [chosen, setChosen] = useState<number | null>(null);
+  const [typedAns, setTypedAns] = useState('');
   const [result, setResult] = useState<{ stars: number; sticker: string | null; right: number; total: number } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -194,7 +201,7 @@ export default function Game() {
   const [doneR, setDoneR] = useState<Record<number, boolean>>({});
   const [flash, setFlash] = useState<number | null>(null);
   const roundQs = useMemo(() => qs.slice(round * 4, round * 4 + 4), [qs, round]);
-  const rightCol = useMemo(() => shuffle(roundQs.map((q, idx) => ({ idx, label: q.a }))), [roundQs]);
+  const rightCol = useMemo(() => shuffle(roundQs.map((q, idx) => ({ idx, label: q.a, imageUri: q.p }))), [roundQs]);
 
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); Sound.stopSpeak(); }, []);
 
@@ -210,8 +217,8 @@ export default function Game() {
     const res = finishGame(r, total);
     setResult({ ...res, right: r, total });
     Sound.fanfare();
-    setTimeout(() => Sound.speak(`Well done! You got ${r} of ${total} right!`), 500);
-  }, [finishGame]);
+    setTimeout(() => Sound.celebrate(app.name, r, total), 500);
+  }, [finishGame, app.name]);
 
   if (qs.length === 0) {
     return (
@@ -219,11 +226,23 @@ export default function Game() {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <View style={[{ backgroundColor: p.card, borderRadius: 22, padding: 24, alignItems: 'center', maxWidth: 420 }, shadow]}>
             <T size={56} style={{ lineHeight: 68 }}>📝</T>
-            <T w={800} size={22} style={{ marginTop: 8, textAlign: 'center' }}>No custom questions yet</T>
-            <T w={700} size={15} color={p.muted} style={{ marginTop: 8, textAlign: 'center', lineHeight: 22 }}>Ask a grown-up to add questions in Settings (PIN required). They will appear here for the child to play.</T>
+            <T w={800} size={22} style={{ marginTop: 8, textAlign: 'center' }}>
+              {(gameSubj === 'E' || gameSubj === 'M' || gameSubj === 'S') && completedForYear(mastered, gameSubj, year) >= POOL_SIZE
+                ? '🎓 All 50 questions mastered!' : 'No custom questions yet'}
+            </T>
+            <T w={700} size={15} color={p.muted} style={{ marginTop: 8, textAlign: 'center', lineHeight: 22 }}>
+              {(gameSubj === 'E' || gameSubj === 'M' || gameSubj === 'S') && completedForYear(mastered, gameSubj, year) >= POOL_SIZE
+                ? (year < 6 ? `You are ready for Year ${year + 1}.` : 'You completed the full Year 6 level!')
+                : 'Ask a grown-up to add questions in Settings (PIN required). They will appear here for the child to play.'}
+            </T>
             <Press onPress={leaveGame} style={{ marginTop: 16, backgroundColor: p.sky, borderRadius: 16, minHeight: 52, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' }}>
               <T w={800} size={16} color="#fff">Back</T>
             </Press>
+            {(gameSubj === 'E' || gameSubj === 'M' || gameSubj === 'S') && completedForYear(mastered, gameSubj, year) >= POOL_SIZE && year < 6 ? (
+              <Press onPress={() => { setSchoolYear(year + 1); leaveGame(); setTab('home'); }} style={{ marginTop: 16, backgroundColor: p.green, borderRadius: 16, minHeight: 52, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' }}>
+                <T w={800} size={16} color="#fff">Move to Year {year + 1}</T>
+              </Press>
+            ) : null}
           </View>
         </View>
       </SafeAreaView>
@@ -231,7 +250,7 @@ export default function Game() {
   }
 
   const answer = (q: Q, optIdx: number) => {
-    if (locked || result) return;
+    if (locked || result || q.type === 'typed') return;
     const picked = q.opts[optIdx];
     if (picked === q.a) {
       setLocked(true); setChosen(optIdx);
@@ -239,16 +258,40 @@ export default function Game() {
       recordAnswer(q, true);
       if (k === 'balloon') { Sound.pop(); setTimeout(() => Sound.right(), 180); } else Sound.right();
       setFb({ text: "🎉 Well done! That's right!", good: true, note: q.x });
-      Sound.speak('Well done! That is right!');
+      setTimeout(() => Sound.praise(app.name), k === 'balloon' ? 220 : 60);
       timer.current = setTimeout(() => {
         if (i + 1 >= qs.length) finish(nr, qs.length);
-        else { setI(i + 1); setLocked(false); setFb(null); setWrongSet({}); setChosen(null); setHelp(false); setHint(false); }
+        else { setI(i + 1); setLocked(false); setFb(null); setTypedAns(''); setWrongSet({}); setChosen(null); setHelp(false); setHint(false); }
       }, q.x ? 2800 : 1400);
     } else {
       setWrongSet((w) => ({ ...w, [optIdx]: true }));
       recordAnswer(q, false); Sound.tryAgain();
       setFb({ text: '💪 Good try! Have another go.', good: false });
+      Sound.encourage(app.name);
       setHint(true); // after a wrong answer the 💡 button highlights; the child taps it if they want the example
+    }
+  };
+
+  const submitTyped = (cq: Q) => {
+    if (locked || result) return;
+    const t = typedAns.trim();
+    if (!t) return;
+    const correct = t.toLowerCase() === cq.a.trim().toLowerCase();
+    if (correct) {
+      setLocked(true);
+      const nr = right + 1; setRight(nr);
+      recordAnswer(cq, true); Sound.right();
+      setFb({ text: "🎉 Well done! That's right!", good: true, note: cq.x });
+      setTimeout(() => Sound.praise(app.name), 60);
+      timer.current = setTimeout(() => {
+        if (i + 1 >= qs.length) finish(nr, qs.length);
+        else { setI(i + 1); setLocked(false); setFb(null); setTypedAns(''); setWrongSet({}); setChosen(null); setHelp(false); setHint(false); }
+      }, cq.x ? 2800 : 1400);
+    } else {
+      recordAnswer(cq, false); Sound.tryAgain();
+      setFb({ text: '💪 Good try! Have another go.', good: false });
+      Sound.encourage(app.name);
+      setTypedAns('');
     }
   };
 
@@ -265,6 +308,7 @@ export default function Game() {
       setDoneL(nl); setDoneR(nrr); setSel(null);
       recordAnswer(q, true); Sound.match();
       setFb({ text: '✨ Great matching!', good: true });
+      setTimeout(() => Sound.matchPraise(app.name), 60);
       const nr = right + 1; setRight(nr);
       if (Object.keys(nrr).length >= 4) {
         timer.current = setTimeout(() => {
@@ -275,12 +319,19 @@ export default function Game() {
     } else {
       recordAnswer(q, false); Sound.tryAgain();
       setFb({ text: '💪 Not that one — try another match.', good: false });
+      Sound.encourage(app.name);
       setFlash(idx); setTimeout(() => setFlash(null), 500);
     }
   };
 
   const total = k === 'match' ? 3 : qs.length;
   const done = result ? total : k === 'match' ? round : i;
+  const subjectLearning = gameSubj === 'E' || gameSubj === 'M' || gameSubj === 'S';
+  const masteredNow = subjectLearning ? completedForYear(mastered, gameSubj, year) : 0;
+  const subjectComplete = subjectLearning && masteredNow >= POOL_SIZE;
+  const currentRound = subjectLearning ? roundForCompleted(masteredNow) : 0;
+  const crossedRound = !!result && subjectLearning && currentRound > startingRound;
+  const nextRoundNumber = Math.min(currentRound + 1, 3);
 
   const header = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 16, paddingBottom: 4 }}>
@@ -291,7 +342,7 @@ export default function Game() {
         <AppIcon name={GAME_ICON[k]} size={44} />
         <View style={{ flex: 1 }}>
           <T w={700} size={19}>{TITLES[k].split(' ').slice(1).join(' ')}</T>
-          <T w={700} size={13} color={p.muted}>Year {year}</T>
+          <T w={700} size={13} color={p.muted}>Year {year} • {gameSubj === 'E' || gameSubj === 'M' || gameSubj === 'S' ? roundLabel(completedForYear(mastered, gameSubj, year)) : '3 rounds • 50 questions'}</T>
         </View>
       </View>
       <Press onPress={toggleSound} accessibilityLabel="Sound on or off" style={[{ width: 46, height: 46, borderRadius: 23, backgroundColor: p.sunny, alignItems: 'center', justifyContent: 'center' }, shadow]}>
@@ -309,8 +360,9 @@ export default function Game() {
   if (result) {
     const s = result.stars;
     const starStr = '⭐'.repeat(s) + '☆'.repeat(3 - s);
+    const roundDone = crossedRound && !subjectComplete;
     body = (
-      <View style={[{ backgroundColor: p.card, borderRadius: 22, paddingVertical: 26, paddingHorizontal: 20, alignItems: 'center', marginTop: 18 }, shadow]}>
+      <View style={[{ backgroundColor: p.card, borderRadius: 26, paddingVertical: 24, paddingHorizontal: 20, alignItems: 'center', marginTop: 18 }, shadow]}>
         <T size={48} style={{ letterSpacing: 6, lineHeight: 60 }}>🎉 🎊 🎉</T>
         <T size={64} style={{ letterSpacing: 4, lineHeight: 80 }}>{starStr}</T>
         {result.sticker ? (
@@ -324,13 +376,23 @@ export default function Game() {
         <T w={700} size={24} style={{ marginTop: 8, marginBottom: 4 }}>
           {s === 3 ? 'Amazing work!' : s === 2 ? 'Great job!' : s === 1 ? 'Good trying!' : 'Good effort!'}
         </T>
-        <T w={700} size={16} color={p.muted} style={{ textAlign: 'center', marginBottom: 18 }}>
+        <T w={700} size={16} color={p.muted} style={{ textAlign: 'center', marginBottom: 4 }}>
           You got {result.right} of {result.total} right and earned {result.right * 2} coins{result.sticker ? ' and a new sticker' : ''}!
         </T>
-        <Press onPress={() => startGame(k)} style={[{ width: '100%', backgroundColor: p.sky, borderRadius: 16, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16 }, shadow]}>
-          <T w={800} size={18} color="#fff">▶ Play again</T>
-        </Press>
-        <Press onPress={() => { leaveGame(); setTab('home'); }} style={{ width: '100%', marginTop: 10, backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 56, alignItems: 'center', justifyContent: 'center', padding: 15 }}>
+        {roundDone ? (
+          <>
+            <T w={700} size={15} color={p.muted} style={{ textAlign: 'center', marginTop: 12, marginBottom: 4 }}>{masteredNow} of {POOL_SIZE} questions mastered this year</T>
+            <T w={700} size={22} style={{ textAlign: 'center', marginBottom: 18 }}>Round {startingRound + 1} Complete!</T>
+            <Press onPress={() => startGame(k)} style={{ width: '100%', backgroundColor: p.green, borderRadius: 18, minHeight: 62, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, marginBottom: 10 }}>
+              <T w={800} size={18} color="#fff">▶ Continue to Round {nextRoundNumber}</T>
+            </Press>
+          </>
+        ) : (
+          <Press onPress={() => startGame(k)} style={{ width: '100%', backgroundColor: p.sky, borderRadius: 16, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16, marginBottom: 10 }}>
+            <T w={800} size={18} color="#fff">▶ Play again</T>
+          </Press>
+        )}
+        <Press onPress={() => { leaveGame(); setTab('home'); }} style={{ width: '100%', backgroundColor: p.violetSoft, borderRadius: 16, minHeight: 56, alignItems: 'center', justifyContent: 'center', padding: 15 }}>
           <T w={800} size={16}>🏠 Back to islands</T>
         </Press>
       </View>
@@ -344,7 +406,7 @@ export default function Game() {
           </View>
           <View style={{ flex: wide ? 1 : undefined, alignItems: wide ? 'flex-start' : 'center' }}>
             <T w={800} size={wide ? 28 : 22} style={{ lineHeight: wide ? 37 : 29.7, textAlign: wide ? 'left' : 'center', marginTop: 10, marginBottom: 4 }}>Match each one to its answer!</T>
-            <T w={700} size={13.5} color={p.muted}>Round {round + 1} of 3 • tap a card, then tap its match</T>
+            <T w={700} size={13.5} color={p.muted}>Set {round + 1} of 3 • tap a card, then tap its match</T>
             <Press onPress={() => Sound.speak('Match each one to its answer. Tap a card, then tap its match.')} style={{ marginTop: 10, backgroundColor: p.sunny, borderRadius: 999, paddingVertical: 12, paddingHorizontal: 20, minHeight: 50, justifyContent: 'center' }}>
               <T w={800} size={15} color="#2D2A4A">🔊 Hear how to play</T>
             </Press>
@@ -355,8 +417,8 @@ export default function Game() {
             const r = rightCol[idx];
             return (
               <View key={idx} style={{ flexDirection: 'row', gap: 12, alignItems: 'stretch' }}>
-                <MatchCard emoji={q.e === '✨' ? undefined : q.e} label={shortQ(q.q)} state={doneL[idx] ? 'done' : sel === idx ? 'sel' : 'idle'} onPress={() => tapLeft(idx)} />
-                <MatchCard label={r.label} state={doneR[r.idx] ? 'done' : flash === r.idx ? 'wrong' : 'idle'} onPress={() => tapRight(r.idx)} />
+                <MatchCard emoji={q.e === '✨' ? undefined : q.e} imageUri={q.imageUri} label={shortQ(q.q)} state={doneL[idx] ? 'done' : sel === idx ? 'sel' : 'idle'} onPress={() => tapLeft(idx)} />
+                <MatchCard emoji={undefined} imageUri={r.imageUri} label={r.label} state={doneR[r.idx] ? 'done' : flash === r.idx ? 'wrong' : 'idle'} onPress={() => tapRight(r.idx)} />
               </View>
             );
           })}
@@ -371,7 +433,23 @@ export default function Game() {
       <View>
         <QuestionCard q={q} help={help} hint={hint} onHelp={() => setHelp((h) => !h)} extra={k === 'rescue' ? `${buddy} needs your help — rescue step ${i + 1} of ${qs.length} 🔓` : undefined} />
         <FeedbackLine fb={fb} />
-        {k === 'balloon' ? (
+        {q.type === 'typed' ? (
+          <View style={{ marginTop: 6 }}>
+            <TextInput
+              value={typedAns}
+              onChangeText={setTypedAns}
+              placeholder="Type your answer"
+              placeholderTextColor={p.muted}
+              style={{ width: '100%', fontSize: 20, paddingVertical: 16, paddingHorizontal: 16, borderRadius: 18, borderWidth: 3, borderColor: p.line, backgroundColor: p.bg, color: p.ink, textAlign: 'center', marginBottom: 10 }}
+              autoCapitalize="words"
+              returnKeyType="done"
+              onSubmitEditing={() => submitTyped(q)}
+            />
+            <Press onPress={() => submitTyped(q)} disabled={locked || !typedAns.trim()} style={{ width: '100%', backgroundColor: p.green, borderRadius: 18, minHeight: 56, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
+              <T w={800} size={17} color="#fff">✓ Check answer</T>
+            </Press>
+          </View>
+        ) : k === 'balloon' ? (
           <View style={{ backgroundColor: p.dark ? '#2D3C69' : '#D6F0FF', borderRadius: 22, paddingTop: compact ? 10 : 18, paddingBottom: compact ? 4 : 14, paddingHorizontal: 12, marginTop: 6, overflow: 'hidden' }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
               {q.opts.map((o, oi) => (
@@ -414,6 +492,20 @@ export default function Game() {
         {header}
         {progress}
         {body}
+        {subjectComplete ? (
+          <Press
+            onPress={() => {
+              if (year < 6) {
+                setSchoolYear(year + 1);
+                leaveGame();
+                setTab('home');
+              }
+            }}
+            style={[{ width: '100%', backgroundColor: p.green, borderRadius: 16, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16, marginBottom: 10 }, shadow]}
+          >
+            <T w={800} size={17} color="#fff">{year < 6 ? `🎓 Move to Year ${year + 1}` : '🏆 Finished Year 6'}</T>
+          </Press>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

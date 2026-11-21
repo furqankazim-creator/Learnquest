@@ -4,7 +4,7 @@ import { Avatar } from '../components/Characters';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AGES, SUBJECTS, Subj, usePalette } from '../theme';
 import { Press, ProgressBar, T, useCardShadow } from '../components/UI';
-import { GameKind, GameSubj, POOL_SIZE, STICKERS, Tab, useApp } from '../state';
+import { completedForYear, GameKind, GameSubj, POOL_SIZE, roundLabel, STICKERS, Tab, useApp } from '../state';
 import { Sound } from '../sound';
 import Parent from './Parent';
 import Settings from './Settings';
@@ -55,7 +55,7 @@ function Home({ onOpenBloomLearn, onOpenPublisher }: { onOpenBloomLearn: () => v
   const p = usePalette();
   const { wide } = useLayout();
   const shadow = useCardShadow();
-  const { startGame, right, setGameSubj, setTab } = useApp();
+  const { startGame, right, setGameSubj, setTab, year } = useApp();
   return (
     <View>
       <Press
@@ -76,7 +76,7 @@ function Home({ onOpenBloomLearn, onOpenPublisher }: { onOpenBloomLearn: () => v
       <View style={wide ? { flexDirection: 'row', gap: 16 } : undefined}>
       {SUBJ_KEYS.map((s) => {
         const info = SUBJECTS[s];
-        const done = Object.keys(right[s]).length;
+        const done = completedForYear(right, s, year);
         const c = (p as any)[info.color] as string;
         return (
           <Press
@@ -104,61 +104,47 @@ function Home({ onOpenBloomLearn, onOpenPublisher }: { onOpenBloomLearn: () => v
         Questions get harder every year — Year 1 starts with sounds and counting, Year 6 reaches fractions, ratio, algebra, evolution and the heart.
       </T>
 
-      <View style={[{ backgroundColor: '#3B2F6B', borderRadius: 24, padding: 16, marginTop: 18, marginBottom: 12 }, shadow]}>
+      <View style={[{ backgroundColor: '#F1F4FF', borderRadius: 24, padding: 16, marginTop: 18, marginBottom: 12, borderWidth: 1, borderColor: '#DDE3FF' }, shadow]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#4B57D6', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#DDE6FF', alignItems: 'center', justifyContent: 'center' }}>
             <T size={28}>🌱</T>
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <T w={800} size={20} color="#fff">BloomLearn</T>
+              <T w={800} size={20} color="#34316A">BloomLearn</T>
               <View style={{ backgroundColor: '#D9F3E6', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
                 <T w={700} size={11} color="#1B7F4A">AI</T>
               </View>
             </View>
-            <T w={700} size={13} color="#D9D6F5">Say it. See it. Learn it.</T>
+            <T w={700} size={13} color="#6862A1">Say it. See it. Learn it.</T>
           </View>
         </View>
-        <T w={600} size={13.5} color="#E6E1FF" style={{ marginTop: 10, lineHeight: 20 }}>
-          Speak or type a sentence and turn it into a visual learning scene with interactive videos, maths, and science practice.
+        <T w={600} size={13.5} color="#50527A" style={{ marginTop: 10, lineHeight: 20 }}>
+          Turn spoken or typed sentences into visual learning scenes with interactive maths and science practice.
         </T>
         <Press
-          onPress={() => {
-            Sound.tap();
-            onOpenBloomLearn();
-          }}
-          style={{ marginTop: 14, backgroundColor: '#4B57D6', borderRadius: 16, minHeight: 52, alignItems: 'center', justifyContent: 'center' }}
+          onPress={() => { Sound.tap(); onOpenBloomLearn(); }}
+          style={{ marginTop: 14, backgroundColor: '#CFE0FF', borderRadius: 16, minHeight: 52, alignItems: 'center', justifyContent: 'center' }}
         >
-          <T w={800} size={16} color="#fff">Meet BloomLearn ›</T>
+          <T w={800} size={16} color="#34316A">Meet BloomLearn ›</T>
         </Press>
       </View>
 
-      <View style={[{ backgroundColor: '#D8B36C', borderRadius: 24, padding: 16, marginBottom: 12 }, shadow]}>
+      <View style={[{ backgroundColor: '#FFF7E1', borderRadius: 24, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#F1E4B8' }, shadow]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#F6C866', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#FFEAAD', alignItems: 'center', justifyContent: 'center' }}>
             <T size={28}>🌉</T>
           </View>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <T w={800} size={20} color="#2D2A4A">Hope Bridge Digital</T>
-              <View style={{ backgroundColor: '#FFF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 }}>
-                <T w={700} size={10.5} color="#9D6A00">Publisher</T>
-              </View>
-            </View>
-            <T w={600} size={13.5} color="#3B2F2A">Calm, Family-First Apps for Autism, Speech & Attention Needs</T>
+            <T w={800} size={20} color="#34316A">Hope Bridge Digital</T>
+            <T w={600} size={13.5} color="#6862A1">Calm, family-first learning and communication apps</T>
           </View>
         </View>
-        <T w={600} size={13.5} color="#473522" style={{ marginTop: 10, lineHeight: 20 }}>
-          Makers of Angel Artic, Angel Talk, BloomLearn, Bloom Focus & Nexia Bridge. Calm, family-first apps for autism, speech, and attention needs.
-        </T>
         <Press
-          onPress={() => {
-            Sound.tap();
-            onOpenPublisher();
-          }}
-          style={{ marginTop: 14, backgroundColor: '#F1655B', borderRadius: 16, minHeight: 52, alignItems: 'center', justifyContent: 'center' }}
+          onPress={() => { Sound.tap(); onOpenPublisher(); }}
+          style={{ marginTop: 14, backgroundColor: '#FFCF68', borderRadius: 16, minHeight: 52, alignItems: 'center', justifyContent: 'center' }}
         >
-          <T w={800} size={16} color="#fff">Explore Our Apps & Mission ›</T>
+          <T w={800} size={16} color="#34316A">Explore Our Apps & Mission ›</T>
         </Press>
       </View>
     </View>
@@ -252,7 +238,7 @@ function Rewards() {
   const pct = answered ? Math.round((correct / answered) * 100) : 0;
   const nextSticker = STICKERS.findIndex((_, i) => !stickers.includes(i));
   const stickerCount = stickers.length;
-  const islandDone = (s: Subj) => Object.keys(right[s]).length;
+  const islandDone = (s: Subj) => completedForYear(right, s, year);
 
   const milestones = [
     { id: 'q10', title: 'Curious Starter', desc: 'Answer 10 questions', done: answered >= 10, icon: '🌱' },
@@ -353,6 +339,7 @@ function Rewards() {
                 <T w={800} size={16} color={c}>{Math.round((done / POOL_SIZE) * 100)}%</T>
               </View>
               <ProgressBar pct={(done / POOL_SIZE) * 100} color={c} />
+              <T w={800} size={12} color={c} style={{ marginTop: 5 }}>{done >= POOL_SIZE ? 'All 3 rounds complete' : roundLabel(done)}</T>
             </View>
           );
         })}

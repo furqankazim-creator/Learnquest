@@ -325,3 +325,128 @@
     - `package.json`
     - `.gitignore`
     - `vercel.json`
+
+## 2026-11-18
+
+- **14:58:34 – 15:14:18** ⏱️ Active Coding Session (**16 min**)
+  - 📁 **Files Worked On (4):**
+    - `src/state.tsx`
+    - `src/screens/Shell.tsx`
+    - `src/screens/Parent.tsx`
+    - `src/screens/Game.tsx`
+
+- **15:25:57 – 15:29:10** ⏱️ Active Coding Session (**3 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Game.tsx`
+
+- **15:48:23 – 15:53:42** ⏱️ Active Coding Session (**5 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/screens/Game.tsx`
+    - `src/screens/Shell.tsx`
+
+- **16:45:11 – 16:49:15** ⏱️ Active Coding Session (**4 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/screens/HopeBridgePromo.tsx`
+    - `src/screens/Shell.tsx`
+
+- **17:14:12 – 17:17:30** ⏱️ Active Coding Session (**3 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/screens/Shell.tsx`
+    - `src/screens/HopeBridgePromo.tsx`
+
+## 2026-11-20
+
+- **09:41:15 – 09:53:51** ⏱️ Active Coding Session (**13 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Game.tsx`
+
+- **10:41:21 – 10:41:30** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Game.tsx`
+
+- **11:04:10 – 11:07:11** ⏱️ Active Coding Session (**3 min**)
+  - 📁 **Files Worked On (3):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+    - `src/screens/Game.tsx`
+
+- **11:13:48 – 11:23:15** ⏱️ Active Coding Session (**9 min**)
+  - 📁 **Files Worked On (3):**
+    - `src/screens/Game.tsx`
+    - `src/screens/Settings.tsx`
+    - `src/state.tsx`
+
+- **11:40:14 – 11:40:14** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Settings.tsx`
+
+- **12:25:28 – 12:27:26** ⏱️ Active Coding Session (**2 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Settings.tsx`
+
+- **12:56:23 – 13:03:45** ⏱️ Active Coding Session (**7 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+
+- **13:21:37 – 13:21:37** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Settings.tsx`
+
+- **14:42:06 – 14:50:22** ⏱️ Active Coding Session (**8 min**)
+  - 📁 **Files Worked On (3):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+    - `src/screens/Game.tsx`
+
+- **15:04:19 – 15:05:16** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Game.tsx`
+
+- **15:15:07 – 15:17:20** ⏱️ Active Coding Session (**2 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+
+- **15:50:41 – 15:52:19** ⏱️ Active Coding Session (**2 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+
+- **15:59:55 – 15:59:55** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Settings.tsx`
+
+- **16:13:33 – 16:13:34** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `app.json`
+    - `src/screens/Settings.tsx`
+
+- **16:35:29 – 16:36:16** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+
+- **16:47:45 – 16:48:36** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/state.tsx`
+    - `src/screens/Settings.tsx`
+
+- **16:55:42 – 16:57:19** ⏱️ Active Coding Session (**2 min**)
+  - 📁 **Files Worked On (1):**
+    - `src/screens/Settings.tsx`
+
+- **17:14:17 – 17:22:57** ⏱️ Active Coding Session (**9 min**)
+  - 📁 **Files Worked On (2):**
+    - `src/screens/Settings.tsx`
+    - `src/state.tsx`
+
+## 2026-11-21
+
+- **09:55:18 – 09:55:19** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (3):**
+    - `src/sound.ts`
+    - `src/state.tsx`
+    - `src/screens/Game.tsx`
