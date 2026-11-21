@@ -38,37 +38,39 @@ export default function Welcome() {
           <View style={wide ? { flexDirection: 'row', gap: 40, alignItems: 'flex-start' } : undefined}>
           <View style={wide ? { flex: 1 } : undefined}>
           {/* top: owl + corner buttons */}
-          <View style={{ alignItems: 'center', paddingTop: 26 }}>
-            <View style={{ position: 'absolute', top: 22, right: 0, gap: 10, zIndex: 2 }}>
+          <View style={{ paddingTop: mid ? 26 : 10 }}>
+            <View style={mid ? { position: 'absolute', top: 22, right: 0, gap: 10, zIndex: 2 } : { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginBottom: 6 }}>
               <Press
                 onPress={toggleSound}
                 accessibilityLabel="Sound on or off"
-                style={[{ width: 60, height: 60, borderRadius: 30, backgroundColor: p.sunny, alignItems: 'center', justifyContent: 'center' }, shadow]}
+                style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: p.sunny, alignItems: 'center', justifyContent: 'center' }, shadow]}
               >
-                <T size={28}>{soundOn ? '🔊' : '🔇'}</T>
+                <T size={24}>{soundOn ? '🔊' : '🔇'}</T>
               </Press>
               <Press
                 onPress={() => setPref(pref === 'dark' ? 'light' : 'dark')}
                 accessibilityLabel="Light or dark theme"
-                style={[{ width: 60, height: 60, borderRadius: 30, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }, shadow]}
+                style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }, shadow]}
               >
-                <T size={28}>{pref === 'dark' ? '☀️' : '🌙'}</T>
+                <T size={24}>{pref === 'dark' ? '☀️' : '🌙'}</T>
               </Press>
               <Press
                 onPress={() => enter('Guest Explorer', me, year, 'parent')}
                 accessibilityLabel="Grown-ups area"
-                style={[{ width: 60, height: 60, borderRadius: 30, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }, shadow]}
+                style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: p.violetSoft, alignItems: 'center', justifyContent: 'center' }, shadow]}
               >
-                <T size={30}>👨‍👩‍👧</T>
+                <T size={26}>👨‍👩‍👧</T>
               </Press>
             </View>
-            <SvgXml xml={badgeSvg()} width={160} height={160} />
-            <T w={800} size={30} style={{ lineHeight: 34.5, textAlign: 'center', marginTop: 18, marginBottom: 6 }}>
-              Who is learning today?
-            </T>
-            <T w={700} size={15} color={p.muted} style={{ textAlign: 'center', marginBottom: 20 }}>
-              English • Maths • Science — Years 1 to 6
-            </T>
+            <View style={{ alignItems: 'center' }}>
+              <SvgXml xml={badgeSvg()} width={mid ? 160 : 140} height={mid ? 160 : 140} />
+              <T w={800} size={mid ? 30 : 26} style={{ lineHeight: mid ? 34.5 : 31, textAlign: 'center', marginTop: 18, marginBottom: 6 }}>
+                Who is learning today?
+              </T>
+              <T w={700} size={15} color={p.muted} style={{ textAlign: 'center', marginBottom: 20 }}>
+                English • Maths • Science — Years 1 to 6
+              </T>
+            </View>
           </View>
 
           {/* Play now */}

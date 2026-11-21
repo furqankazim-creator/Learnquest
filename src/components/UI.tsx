@@ -1,6 +1,6 @@
 import React from 'react';
-import { Platform, Pressable, Text as RNText, TextProps, TextStyle, View, ViewStyle, StyleProp } from 'react-native';
-import { FONT, usePalette } from '../theme';
+import { Platform, Pressable, PressableStateCallbackType, Text as RNText, TextProps, TextStyle, View, ViewStyle, StyleProp } from 'react-native';
+import { FONT, Palette, usePalette } from '../theme';
 
 // Text with the app font. weight >= 700 uses the bold face.
 export function T({ style, w = 400, size = 18, color, ...rest }: TextProps & { w?: number; size?: number; color?: string }) {
@@ -25,11 +25,27 @@ export function useCardShadow(): ViewStyle {
   })!;
 }
 
+export function cardSurface(p: Palette, radius = 20): ViewStyle {
+  return { backgroundColor: p.card, borderRadius: radius };
+}
+
 export function Press({ style, children, onPress, disabled, ...rest }: {
-  style?: StyleProp<ViewStyle>; children: React.ReactNode; onPress?: () => void; disabled?: boolean;
+  style?: StyleProp<ViewStyle> | ((state: PressableStateCallbackType) => StyleProp<ViewStyle>);
+  children?: React.ReactNode | ((state: PressableStateCallbackType) => React.ReactNode);
+  onPress?: () => void; disabled?: boolean;
 } & Record<string, any>) {
   return (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" style={style} {...rest}>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      android_ripple={Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.08)', foreground: true } : undefined}
+      style={(state) => [
+        { opacity: disabled ? 0.45 : state.pressed && Platform.OS !== 'android' ? 0.84 : 1 },
+        typeof style === 'function' ? style(state) : style,
+      ]}
+      {...rest}
+    >
       {children}
     </Pressable>
   );

@@ -84,8 +84,8 @@ function Home({ onOpenBloomLearn, onOpenPublisher }: { onOpenBloomLearn: () => v
             onPress={() => { setGameSubj(s); Sound.tap(); setTab('games'); }}
             style={[{ flex: wide ? 1 : undefined, flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, padding: 16, marginBottom: 12, backgroundColor: p.card, minHeight: 116 }, shadow]}
           >
-            <View style={{ width: 92, height: 92, borderRadius: 46, backgroundColor: (p as any)[info.soft], alignItems: 'center', justifyContent: 'center' }}>
-              <AppIcon name={SUBJECT_ICON[s]} size={58} />
+            <View style={{ width: wide ? 92 : 76, height: wide ? 92 : 76, borderRadius: wide ? 46 : 38, backgroundColor: (p as any)[info.soft], alignItems: 'center', justifyContent: 'center' }}>
+              <AppIcon name={SUBJECT_ICON[s]} size={wide ? 58 : 46} />
             </View>
             <View style={{ flex: 1 }}>
               <T w={700} size={19}>{info.name} Island</T>
@@ -412,11 +412,11 @@ function TabBar() {
     { t: 'parent', label: 'Parent' },
   ];
   return (
-    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 10) + 8, pointerEvents: 'box-none' }}>
+    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingHorizontal: 12, paddingBottom: Math.max(insets.bottom, 8) + 6, pointerEvents: 'box-none' }}>
       <View
         style={[{
-          flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 420, backgroundColor: p.card, borderRadius: 28,
-          paddingVertical: 8, paddingHorizontal: 8, gap: 6, borderWidth: 1, borderColor: p.line,
+          flexDirection: 'row', alignItems: 'center', width: '100%', maxWidth: 440, backgroundColor: p.card, borderRadius: 28,
+          paddingVertical: 8, paddingHorizontal: 6, gap: 4, borderWidth: 1, borderColor: p.line,
         }, shadow]}
       >
         {tabs.map((x) => {
