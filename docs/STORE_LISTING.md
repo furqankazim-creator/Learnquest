@@ -18,9 +18,10 @@ Learn English, Maths and Science through four friendly games — Balloon Pop, Re
 • Stars, coins and stickers are only ever earned — never lost. No timers, no fail screens, gentle encouragement on every wrong answer.
 • Pick a buddy, build a daily streak and collect all 12 stickers.
 • Grown-ups' Area (PIN-protected) shows progress by subject and gives a "practise tonight" tip.
+• Grown-ups can create custom questions (with optional pictures from the photo library) that stay on the device.
 • Works offline. Light and dark themes.
 
-PRIVACY: No ads, no chat, no accounts, no tracking. Only an optional first name is kept, and it stays on the device.
+PRIVACY: No ads, no chat, no accounts, no tracking SDKs. Progress and custom content are stored on-device. Optional photo library access is used only for custom question images you choose.
 
 ## Keywords (App Store)
 kids,learning,maths,english,science,quiz,primary,year 1,year 6,phonics,times tables,educational
@@ -32,18 +33,21 @@ Education (Primary). Target audience: ages 5–8 and 9–12 — choose the **Kid
 - Violence, sexual content, profanity, gambling, horror, alcohol/drugs: **None**
 - User-generated content / chat / social features: **No**
 - Ads: **No**   • In-app purchases: **No**   • Location: **No**
-- Contains a web view or external links: **No**
+- External links: **Yes** (publisher website/email links in Discover/About & support). Ensure compliance with Families policy (e.g. place behind a parental gate if required for your target audience/programme).
 
 ## Google Play — Data safety form
-- Does the app collect or share any user data? **No**
-- Is data encrypted in transit? **N/A (no data leaves the device)**
+- Does the app collect or share any user data with the developer/third parties? **No** (confirm in Play Console against actual behavior).
+- On-device data: profile/progress/settings/custom questions and optional custom-question images stored locally.
+- Photo library/media permission: **optional**, only when a grown-up adds a picture to a custom question; selected images are copied on-device and not uploaded by the app.
+- Is data encrypted in transit? **N/A for app-collected data** (no app data sent to developer). External links open in browser/email apps.
 - Can users request data deletion? **Yes — Parent tab → Reset, or uninstall**
-- Target audience: **Children (ages 5–8 and 9–12)** → Families Policy applies. Confirm the app has **no ads SDK** (true) and that you can state it is **not** collecting personal data.
-- Privacy policy URL: host `docs/PRIVACY_POLICY.md` as a web page (GitHub Pages, Notion public page, or your own site) and paste the link.
+- Target audience: **Children (ages 5–8 and 9–12)** → Families Policy applies. Confirm **no ads SDK**, accurate Data safety, and parental gating for external links as required.
+- Privacy policy URL: host `docs/PRIVACY_POLICY.md` as a web page and paste the final URL in Play Console and `src/appInfo.ts`.
 
 ## Apple — App Privacy questionnaire
-- Data collection: **Data Not Collected**
-- Kids Category: yes (age band 6–8 or 9–11; choose the one matching your testing). No third-party analytics or advertising, no links out without a parental gate.
+- Data collection by the app/developer: **Data Not Collected** (verify against Apple definitions).
+- Photo library access: declare if prompted by App Store Connect; purpose is user-selected custom question images stored on device.
+- Kids Category: yes (age band 6–8 or 9–11; choose appropriately). No third-party analytics or advertising. External links may require a parental gate depending on category/programme.
 - `ITSAppUsesNonExemptEncryption`: already set to **false** in app.json.
 
 ## Screenshots to capture (portrait, on a real phone)
@@ -56,7 +60,7 @@ Education (Primary). Target audience: ages 5–8 and 9–12 — choose the **Kid
 (Apple also requires iPad screenshots because the app supports tablets.)
 
 ## Support / contact
-REPLACE_WITH_SUPPORT_EMAIL@example.com (update before publishing; keep in sync with `src/appInfo.ts`)
+hello@hopebridgedigital.com (keep in sync with `src/appInfo.ts`)
 
 ## Privacy policy URL
-REPLACE_WITH_PRIVACY_POLICY_URL (host `docs/PRIVACY_POLICY.md` publicly and paste the final URL in Play Console and `src/appInfo.ts`)
+Host `docs/PRIVACY_POLICY.md` publicly and paste the final URL in Play Console/App Store Connect and `src/appInfo.ts`.

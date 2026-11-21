@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Image, ImageSourcePropType, KeyboardAvoidingView, Linking, Modal, Platform, ScrollView, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image, ImageSourcePropType, Linking, Modal, ScrollView, TextInput, View } from 'react-native';
 import { AGES, ThemeCtx, ThemePref, Palette, usePalette } from '../theme';
 import { Press, T, useCardShadow } from '../components/UI';
 import { CustomQuestion, useApp } from '../state';
@@ -36,13 +35,14 @@ export default function Settings() {
   const shadow = useCardShadow();
   const { pref, setPref } = useContext(ThemeCtx);
   const {
-    name, buddy, buddyBg, year, soundOn, toggleSound, setSettingsOpen, favs, custom, addFav, removeFav, createCustom, deleteCustom,
+    name, buddy, buddyBg, year, soundOn, toggleSound, setSettingsOpen, changePlayer, favs, custom, addFav, removeFav, createCustom, deleteCustom,
     customQuestions, addCustomQuestion, deleteCustomQuestion, clearCustomLogs, customLogs,
   } = useApp();
   const [lib, setLib] = useState<null | 'manage' | 'make'>(null);
   const [full, setFull] = useState(false);
   const [askPin, setAskPin] = useState(false);
   const [pendingStudio, setPendingStudio] = useState<null | 'create' | 'list' | 'logs'>(null);
+  const [pendingAction, setPendingAction] = useState<null | 'changePlayer'>(null);
   const [authed, setAuthed] = useState(false);
   const [studio, setStudio] = useState<'closed' | 'create' | 'list' | 'logs'>('closed');
   const [imgUri, setImgUri] = useState<string | null>(null);
@@ -71,6 +71,15 @@ export default function Settings() {
   const [cqPassage, setCqPassage] = useState('');
   const [formErr, setFormErr] = useState<string | null>(null);
   const [cqType, setCqType] = useState<'match' | 'balloon' | 'rescue' | 'quiz'>('balloon');
+  const openChangePlayer = () => {
+    if (!authed) {
+      setPendingAction('changePlayer');
+      setAskPin(true);
+      return;
+    }
+    changePlayer();
+  };
+
   const card = { backgroundColor: p.card, borderRadius: 20, padding: 16, marginBottom: 10 } as const;
 
   const openStudio = (view: 'create' | 'list' | 'logs') => {
@@ -202,7 +211,7 @@ export default function Settings() {
             <T w={700} size={13.5} color={p.muted}>Year {year} • {AGES[year]}</T>
           </View>
         </View>
-        <Press onPress={() => { setAskPin(true); }} style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
+        <Press onPress={() => { openChangePlayer(); }} style={{ backgroundColor: p.violetSoft, borderRadius: 14, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
           <T w={800} size={16}>{buddy} Change player, buddy or year</T>
         </Press>
       </View>
@@ -248,7 +257,7 @@ export default function Settings() {
       <View style={[card, shadow]}>
         <T w={700} size={17} style={{ marginBottom: 8 }}>Privacy</T>
         <T w={600} size={14} color={p.muted} style={{ lineHeight: 21 }}>
-          This app has no accounts, no ads, no chat and no tracking. It never asks for an email, birthday or location. The first name, buddy, school year, stars and stickers are saved only on this device and are never sent anywhere. Grown-ups can erase everything from the Parent tab → Reset, or by deleting the app.
+          This app has no accounts, no ads, no chat and no tracking. We do not collect your data on our servers. A first name, buddy, school year, progress, settings, PIN, and any custom questions are saved only on this device. Optional photo library access is used only when a grown-up adds a picture to a custom question, and selected pictures stay on this device. Discover/About & support links can open a website or email app outside this app.
         </T>
         <T w={700} size={13.5} style={{ marginTop: 10 }}>Policy last updated: {PRIVACY_LAST_UPDATED}</T>
         <T w={600} size={13.5} color={p.muted} style={{ marginTop: 4, lineHeight: 20 }}>Privacy policy URL: {PRIVACY_POLICY_URL}</T>
@@ -271,7 +280,7 @@ export default function Settings() {
         </T>
       </View>
 
-      <Modal visible={askPin} transparent animationType="fade" onRequestClose={() => { setAskPin(false); setPendingStudio(null); }}>
+      <Modal visible={askPin} transparent animationType="fade" onRequestClose={() => { setAskPin(false); setPendingStudio(null); setPendingAction(null); }}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 12 }}>
           <View style={{ width: '100%', maxWidth: 400, backgroundColor: p.card, borderRadius: 22, padding: 16, paddingBottom: 20 }}>
             <T w={800} size={17} style={{ marginBottom: 10 }}>Grown-ups PIN</T>
@@ -282,8 +291,12 @@ export default function Settings() {
                 setStudio(pendingStudio);
                 setPendingStudio(null);
               }
+              if (pendingAction === 'changePlayer') {
+                setPendingAction(null);
+                changePlayer();
+              }
             }} />
-            <Press onPress={() => { setAskPin(false); setPendingStudio(null); }} style={{ alignSelf: 'center', padding: 10 }}>
+            <Press onPress={() => { setAskPin(false); setPendingStudio(null); setPendingAction(null); }} style={{ alignSelf: 'center', padding: 10 }}>
               <T w={700} size={14} color={p.muted}>Cancel</T>
             </Press>
           </View>
@@ -535,7 +548,7 @@ export default function Settings() {
                   </Press>
                 </ScrollView>
               ) : studio === 'list' ? (
-                <View style={{ paddingHorizontal: 18, paddingBottom: 24 }}>
+                <ScrollView style={{ maxHeight: '80%' }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 }}>
                   {customQuestions.length === 0 ? (
                     <View style={{ alignItems: 'center', paddingTop: 30 }}>
                       <T size={60} style={{ lineHeight: 72, marginBottom: 12 }}>📝</T>
@@ -610,9 +623,9 @@ export default function Settings() {
                       </View>
                     ))
                   )}
-                </View>
+                </ScrollView>
               ) : (
-                <View style={{ paddingHorizontal: 18, paddingBottom: 24 }}>
+                <ScrollView style={{ maxHeight: '80%' }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 }}>
                   {customLogs.length === 0 ? (
                     <View style={{ alignItems: 'center', paddingTop: 30 }}>
                       <T size={60} style={{ lineHeight: 72, marginBottom: 12 }}>📊</T>
@@ -620,17 +633,22 @@ export default function Settings() {
                       <T w={700} size={13} color={p.muted} style={{ textAlign: 'center', marginTop: 4 }}>Custom answers appear here.</T>
                     </View>
                   ) : (
-                    customLogs.slice().reverse().map((l: any) => (
-                      <View key={l.id} style={{ backgroundColor: p.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: p.line }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                          <T w={700} size={14}>{l.question}</T>
-                          <T w={700} size={14} color={l.correct ? p.green : p.coral} style={{ fontWeight: '700' }}>{l.correct ? '✓' : '✗'}</T>
+                    <>
+                      <Press onPress={() => { Sound.tap(); clearCustomLogs(); }} style={{ marginBottom: 12, backgroundColor: p.dangerBg, borderRadius: 14, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' }}>
+                        <T w={800} size={14} color={p.dangerText}>Clear answer log</T>
+                      </Press>
+                      {customLogs.slice().reverse().map((l: any) => (
+                        <View key={l.id} style={{ backgroundColor: p.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: p.line }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <T w={700} size={14}>{l.question}</T>
+                            <T w={700} size={14} color={l.correct ? p.green : p.coral} style={{ fontWeight: '700' }}>{l.correct ? '✓' : '✗'}</T>
+                          </View>
+                          <T w={600} size={12} color={p.muted} style={{ marginTop: 4 }}>{new Date(l.at).toLocaleDateString()} • {l.subj ? SUBJ_LABEL[l.subj as Subj] : ''}</T>
                         </View>
-                        <T w={600} size={12} color={p.muted} style={{ marginTop: 4 }}>{new Date(l.at).toLocaleDateString()} • {l.subj ? SUBJ_LABEL[l.subj as Subj] : ''}</T>
-                      </View>
-                    ))
+                      ))}
+                    </>
                   )}
-                </View>
+                </ScrollView>
               )}
               <Press onPress={() => setStudio('closed')} style={{ backgroundColor: p.violetSoft, borderRadius: 20, minHeight: 60, alignItems: 'center', justifyContent: 'center', padding: 16, marginBottom: 8 }}>
                 <T w={800} size={17} color="#2D2A4A">Done</T>

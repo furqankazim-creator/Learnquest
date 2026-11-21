@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Avatar } from '../components/Characters';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AGES, SUBJECTS, Subj, usePalette } from '../theme';
@@ -13,7 +13,6 @@ import AppIcon, { GAME_ICON, SUBJECT_ICON, TAB_ICON } from '../components/Icons'
 import { SvgXml } from 'react-native-svg';
 import { badgeSvg } from '../logo';
 import HopeBridgePromo from './HopeBridgePromo';
-import { HOPE_BRIDGE_URL } from '../data/hopeBridge';
 
 const SUBJ_KEYS: Subj[] = ['E', 'M', 'S'];
 
